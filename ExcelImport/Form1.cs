@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using HtmlAgilityPack;
-
+using Newtonsoft.Json;
 
 namespace ExcelImport
 {
@@ -60,6 +60,7 @@ namespace ExcelImport
                 dtOuptpuExcel.Columns.Add("Body", typeof(string));
                 dtOuptpuExcel.Columns.Add("Is Valid HTML", typeof(string));
                 dtOuptpuExcel.Columns.Add("Is Valid URL", typeof(string));
+                dtOuptpuExcel.Columns.Add("URL type", typeof(string));
 
                 progressBar1.Maximum = rw;
                 progressBar1.Step = 1;
@@ -80,6 +81,7 @@ namespace ExcelImport
                         {
                             drCurrentRow["Is Valid HTML"] = "N/A";
                             drCurrentRow["Is Valid URL"] = "N/A";
+                            drCurrentRow["URL type"] = "N/A";
                             dtOuptpuExcel.Rows.Add(drCurrentRow);
                             continue;
                         }
@@ -91,6 +93,7 @@ namespace ExcelImport
                             //Invalid HTML
                             drCurrentRow["Is Valid HTML"] = "Invalid";
                             drCurrentRow["Is Valid URL"] = "N/A";
+                            drCurrentRow["URL type"] = "N/A";
                         }
                         else
                         {
@@ -106,6 +109,7 @@ namespace ExcelImport
                                 //string urlOutput = "";
                                 bool isInValidURL = false;
                                 bool result = false;
+                                string urltype = string.Empty;
                                 foreach (var item in links)
                                 {
                                     string hrefValue = item.Attributes["href"].Value;
@@ -119,7 +123,19 @@ namespace ExcelImport
                                     if (!result)
                                     {
                                         isInValidURL = true;
+
+                                        //// to define URL type...
+                                        //if (string.IsNullOrEmpty(urltype))
+                                        //{
+                                        //    urltype = uriResult.Scheme;
+                                        //}
+                                        //else
+                                        //{
+                                        //    if (urltype != uriResult.Scheme)
+                                        //        urltype = "Both";
+                                        //}
                                     }
+
                                     //urlOutput = urlOutput +"\n"+ (hrefValue + " - " + result);
                                     //MessageBox.Show(hrefValue);
                                     //MessageBox.Show(str, hrefValue + " - "  + result);
@@ -139,14 +155,13 @@ namespace ExcelImport
 
                         #endregion
 
-
-
-
                     }
                 }
 
+
                 GenerateCountReport(urls);
 
+                string jsonoutput = DataTableToJSONWithJSONNet(dtOuptpuExcel);
                 //WriteDataTableToExcel(dtOuptpuExcel, "Report", @"C:\Users\Pragma Infotech\Desktop\Hiren\Report.xlsx");
                 GenerateExcel(dtOuptpuExcel, @"C:\Excel\Report.xlsx");
 
@@ -270,14 +285,25 @@ namespace ExcelImport
             DataTable dtOuptputExcel = new DataTable();
             dtOuptputExcel.Columns.Add("URL", typeof(string));
             dtOuptputExcel.Columns.Add("Total Count", typeof(string));
+            dtOuptputExcel.Columns.Add("HTTP type", typeof(string));
             foreach (var item in urlsGroups)
             {
+                Uri uriResult;
+                bool result = Uri.TryCreate(item.URL.ToString(), UriKind.Absolute, out uriResult)
+                    && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+
+
+
                 DataRow dr = dtOuptputExcel.NewRow();
                 dr["URL"] = item.URL.ToString();
                 dr["Total Count"] = item.TotalCount.ToString();
+                if (result)
+                {
+                    dr["HTTP type"] = uriResult.Scheme.ToString();
+                }
                 dtOuptputExcel.Rows.Add(dr);
             }
-
+            string jsonoutput = DataTableToJSONWithJSONNet(dtOuptputExcel);
             GenerateExcel(dtOuptputExcel, @"C:\Excel\CountReport.xlsx");
             //WriteDataTableToExcel(dtOuptputExcel, "Count Report", @"C:\Users\Pragma Infotech\Desktop\Hiren\CountReport.xlsx");
         }
@@ -319,6 +345,14 @@ namespace ExcelImport
             excelWorkBook.SaveAs(path); // -> this will do the custom  
             excelWorkBook.Close();
             excelApp.Quit();
+        }
+
+
+        public string DataTableToJSONWithJSONNet(DataTable table)
+        {
+            string JSONString = string.Empty;
+            JSONString = JsonConvert.SerializeObject(table);
+            return JSONString;
         }
     }
 }
