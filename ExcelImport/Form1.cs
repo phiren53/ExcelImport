@@ -123,28 +123,11 @@ namespace ExcelImport
                                     if (!result)
                                     {
                                         isInValidURL = true;
-
-                                        //// to define URL type...
-                                        //if (string.IsNullOrEmpty(urltype))
-                                        //{
-                                        //    urltype = uriResult.Scheme;
-                                        //}
-                                        //else
-                                        //{
-                                        //    if (urltype != uriResult.Scheme)
-                                        //        urltype = "Both";
-                                        //}
                                     }
 
-                                    //urlOutput = urlOutput +"\n"+ (hrefValue + " - " + result);
-                                    //MessageBox.Show(hrefValue);
-                                    //MessageBox.Show(str, hrefValue + " - "  + result);
                                 }
 
                                 drCurrentRow["Is Valid URL"] = isInValidURL ? "InValid" : (result ? "Valid" : "InValid");
-
-                                //MessageBox.Show(urlOutput);
-
 
                             }
                         }
@@ -161,7 +144,7 @@ namespace ExcelImport
 
                 GenerateCountReport(urls);
 
-                string jsonoutput = DataTableToJSONWithJSONNet(dtOuptpuExcel);
+                //string jsonoutput = DataTableToJSONWithJSONNet(dtOuptpuExcel);
                 //WriteDataTableToExcel(dtOuptpuExcel, "Report", @"C:\Users\Pragma Infotech\Desktop\Hiren\Report.xlsx");
                 GenerateExcel(dtOuptpuExcel, @"C:\Excel\Report.xlsx");
 
@@ -188,34 +171,6 @@ namespace ExcelImport
 
         public bool WriteDataTableToExcel(System.Data.DataTable dataTable, string worksheetName, string saveAsLocation)
         {
-
-            //// Bind table data to Stream Writer to export data to respective folder
-            //StreamWriter wr = new StreamWriter(saveAsLocation);
-            //// Write Columns to excel file
-            //for (int i = 0; i < dataTable.Columns.Count; i++)
-            //{
-            //    wr.Write(dataTable.Columns[i].ToString().ToUpper() + "\t");
-            //}
-            //wr.WriteLine();
-            ////write rows to excel file
-            //for (int i = 0; i < (dataTable.Rows.Count); i++)
-            //{
-            //    for (int j = 0; j < dataTable.Columns.Count; j++)
-            //    {
-            //        if (dataTable.Rows[i][j] != null)
-            //        {
-            //            wr.Write(Convert.ToString(dataTable.Rows[i][j]) + "\t");
-            //        }
-            //        else
-            //        {
-            //            wr.Write("\t");
-            //        }
-            //    }
-            //    wr.WriteLine();
-            //}
-            //wr.Close();
-            //return true;
-
 
             Microsoft.Office.Interop.Excel.Application excel;
             Microsoft.Office.Interop.Excel.Workbook excelworkBook;
@@ -274,41 +229,101 @@ namespace ExcelImport
 
         public void GenerateCountReport(List<string> urls)
         {
-            var urlsGroups = urls.GroupBy(i => i)
-                        .Select(grp => new
-                        {
-                            URL = grp.Key,
-                            TotalCount = grp.Count()
-                        })
-                        .ToArray();
 
-            DataTable dtOuptputExcel = new DataTable();
-            dtOuptputExcel.Columns.Add("URL", typeof(string));
-            dtOuptputExcel.Columns.Add("Total Count", typeof(string));
-            dtOuptputExcel.Columns.Add("HTTP type", typeof(string));
-            foreach (var item in urlsGroups)
+            try
             {
-                Uri uriResult;
-                bool result = Uri.TryCreate(item.URL.ToString(), UriKind.Absolute, out uriResult)
-                    && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
 
 
+                var urlsGroups = urls.GroupBy(i => i)
+                            .Select(grp => new
+                            {
+                                URL = grp.Key,
+                                TotalCount = grp.Count()
+                            })
+                            .ToArray();
 
-                DataRow dr = dtOuptputExcel.NewRow();
-                dr["URL"] = item.URL.ToString();
-                dr["Total Count"] = item.TotalCount.ToString();
-                if (result)
+                DataTable dtOuptputExcel = new DataTable();
+                dtOuptputExcel.Columns.Add("URL", typeof(string));
+                dtOuptputExcel.Columns.Add("Total Count", typeof(string));
+                dtOuptputExcel.Columns.Add("HTTP type", typeof(string));
+                dtOuptputExcel.Columns.Add("URL_wo_Scheme", typeof(string));
+                dtOuptputExcel.Columns.Add("Extension", typeof(string));
+                dtOuptputExcel.Columns.Add("DocType", typeof(string));
+                foreach (var item in urlsGroups)
                 {
-                    dr["HTTP type"] = uriResult.Scheme.ToString();
+                    Uri uriResult;
+                    bool result = Uri.TryCreate(item.URL.ToString(), UriKind.Absolute, out uriResult)
+                        && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+
+
+
+                    DataRow dr = dtOuptputExcel.NewRow();
+                    dr["URL"] = item.URL.ToString();
+                    dr["Total Count"] = item.TotalCount.ToString();
+                    if (result)
+                    {
+                        dr["HTTP type"] = uriResult.Scheme.ToString();
+                        SetHTTPType(dtOuptputExcel, uriResult, dr);
+                        SetDocType(item.URL.ToString(), dtOuptputExcel, dr);
+                    }
+
+
+                    dtOuptputExcel.Rows.Add(dr);
                 }
-                dtOuptputExcel.Rows.Add(dr);
+                //dtOuptputExcel.Columns.Remove("URL_wo_Scheme");
+                //string jsonoutput = DataTableToJSONWithJSONNet(dtOuptputExcel);
+                GenerateExcel(dtOuptputExcel, @"C:\Excel\CountReport.xlsx");
+                //WriteDataTableToExcel(dtOuptputExcel, "Count Report", @"C:\Users\Pragma Infotech\Desktop\Hiren\CountReport.xlsx");
             }
-            string jsonoutput = DataTableToJSONWithJSONNet(dtOuptputExcel);
-            GenerateExcel(dtOuptputExcel, @"C:\Excel\CountReport.xlsx");
-            //WriteDataTableToExcel(dtOuptputExcel, "Count Report", @"C:\Users\Pragma Infotech\Desktop\Hiren\CountReport.xlsx");
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
+        private static void SetHTTPType(DataTable dtOuptputExcel, Uri uriResult, DataRow dr)
+        {
+            #region find similar URL without http/https
+            string uriWithoutScheme = uriResult.Host + uriResult.PathAndQuery + uriResult.Fragment;
+            dr["URL_wo_Scheme"] = uriWithoutScheme;
 
+
+            DataRow[] drArrSameURL = dtOuptputExcel.Select("URL_wo_Scheme = '" + uriWithoutScheme.Replace("'", "''") + "'");
+            if (drArrSameURL.Length > 0)
+            {
+                foreach (DataRow dataRow in drArrSameURL)
+                {
+                    if (uriResult.Scheme.ToString() != dataRow["HTTP type"].ToString())
+                    {
+                        dtOuptputExcel.Rows[dtOuptputExcel.Rows.IndexOf(dataRow)]["HTTP type"] = "BOTH";
+                        dr["HTTP type"] = "BOTH";//Change current row value also...
+                    }
+                }
+            }
+            #endregion
+        }
+
+        private static void SetDocType(string url, DataTable dtOuptputExcel, DataRow dr)
+        {
+            string pattern = @"\.\w{3,4}($|\?)";
+            RegexOptions options = RegexOptions.Multiline;
+            List<string> docextensions = new List<string> { ".doc", ".docx", ".pdf", ".jpeg", ".txt", ".bmp", ".png", ".mp3", ".mp4", ".ppt", ".mov" };
+            List<string> pageextensions = new List<string> { ".aspx", ".html", ".php", ".htm", ".jsp" };
+
+            foreach (Match m in Regex.Matches(url, pattern, options))
+            {
+                string extension = m.Value;
+                dr["Extension"] = extension;
+                if (docextensions.Contains(extension.Replace("?", "")))
+                {
+                    dr["DocType"] = "Document";
+                }
+                else if (pageextensions.Contains(extension.Replace("?", "")))
+                {
+                    dr["DocType"] = "Page";
+                }
+            }
+        }
         public static void GenerateExcel(DataTable dataTable, string path)
         {
 
