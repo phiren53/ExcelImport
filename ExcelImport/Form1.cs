@@ -60,7 +60,9 @@ namespace ExcelImport
                 dtOuptpuExcel.Columns.Add("Body", typeof(string));
                 dtOuptpuExcel.Columns.Add("Is Valid HTML", typeof(string));
                 dtOuptpuExcel.Columns.Add("Is Valid URL", typeof(string));
-                dtOuptpuExcel.Columns.Add("URL type", typeof(string));
+                //dtOuptpuExcel.Columns.Add("URL type", typeof(string));
+                dtOuptpuExcel.Columns.Add("Is fws.gov", typeof(string));
+                dtOuptpuExcel.Columns.Add("Is MailTo", typeof(string));
 
                 progressBar1.Maximum = rw;
                 progressBar1.Step = 1;
@@ -81,7 +83,7 @@ namespace ExcelImport
                         {
                             drCurrentRow["Is Valid HTML"] = "N/A";
                             drCurrentRow["Is Valid URL"] = "N/A";
-                            drCurrentRow["URL type"] = "N/A";
+                            //drCurrentRow["URL type"] = "N/A";
                             dtOuptpuExcel.Rows.Add(drCurrentRow);
                             continue;
                         }
@@ -93,7 +95,7 @@ namespace ExcelImport
                             //Invalid HTML
                             drCurrentRow["Is Valid HTML"] = "Invalid";
                             drCurrentRow["Is Valid URL"] = "N/A";
-                            drCurrentRow["URL type"] = "N/A";
+                            //drCurrentRow["URL type"] = "N/A";
                         }
                         else
                         {
@@ -113,18 +115,42 @@ namespace ExcelImport
                                 foreach (var item in links)
                                 {
                                     string hrefValue = item.Attributes["href"].Value;
+                                    
+                                    if (hrefValue.IndexOf("</a>") > 0)
+                                    {
+                                        hrefValue = hrefValue.Substring(0, hrefValue.IndexOf("</a>"));
+                                    }
+                                    else if (hrefValue.IndexOf("</A>") > 0)
+                                    {
+                                        hrefValue = hrefValue.Substring(0, hrefValue.IndexOf("</A>"));
+                                    }
+
 
                                     urls.Add(hrefValue);
+
+
 
                                     Uri uriResult;
                                     result = Uri.TryCreate(hrefValue, UriKind.Absolute, out uriResult)
                                         && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
 
+
                                     if (!result)
                                     {
                                         isInValidURL = true;
                                     }
+                                    else
+                                    {
+                                        if (hrefValue.Contains("www.fws.gov"))
+                                        {
+                                            drCurrentRow["Is fws.gov"] = "Yes";
+                                        }
+                                    }
 
+                                    if (hrefValue.Contains("mailto:"))
+                                    {
+                                        drCurrentRow["Is MailTo"] = "Yes";
+                                    }
                                 }
 
                                 drCurrentRow["Is Valid URL"] = isInValidURL ? "InValid" : (result ? "Valid" : "InValid");
@@ -133,8 +159,6 @@ namespace ExcelImport
                         }
 
                         dtOuptpuExcel.Rows.Add(drCurrentRow);
-
-
 
                         #endregion
 
@@ -149,7 +173,8 @@ namespace ExcelImport
                 GenerateExcel(dtOuptpuExcel, @"C:\Excel\Report.xlsx");
 
 
-                xlWorkBook.Close(true, null, null);
+                //xlWorkBook.Close(true, null, null);
+                xlWorkBook.Close(0);
                 xlApp.Quit();
 
                 Marshal.ReleaseComObject(xlWorkSheet);
@@ -166,63 +191,6 @@ namespace ExcelImport
             {
 
                 throw ex;
-            }
-        }
-
-        public bool WriteDataTableToExcel(System.Data.DataTable dataTable, string worksheetName, string saveAsLocation)
-        {
-
-            Microsoft.Office.Interop.Excel.Application excel;
-            Microsoft.Office.Interop.Excel.Workbook excelworkBook;
-            Microsoft.Office.Interop.Excel.Worksheet excelSheet;
-
-            try
-            {
-                //  get Application object.
-                excel = new Microsoft.Office.Interop.Excel.Application();
-                excel.Visible = false;
-                excel.DisplayAlerts = false;
-
-                // Creation a new Workbook
-                excelworkBook = excel.Workbooks.Add(Type.Missing);
-
-                // Workk sheet
-                excelSheet = (Microsoft.Office.Interop.Excel.Worksheet)excelworkBook.ActiveSheet;
-                excelSheet.Name = worksheetName;
-
-                // loop through each row and add values to our sheet
-                int rowcount = 1;
-
-                foreach (DataRow datarow in dataTable.Rows)
-                {
-                    rowcount += 1;
-                    for (int i = 1; i <= dataTable.Columns.Count; i++)
-                    {
-                        // on the first iteration we add the column headers
-                        if (rowcount == 3)
-                        {
-                            excelSheet.Cells[2, i] = dataTable.Columns[i - 1].ColumnName;
-                        }
-                        // Filling the excel file 
-                        excelSheet.Cells[rowcount, i] = datarow[i - 1].ToString();
-                    }
-                }
-
-                //now save the workbook and exit Excel
-                excelworkBook.SaveAs(saveAsLocation); ;
-                excelworkBook.Close();
-                excel.Quit();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-                return false;
-            }
-            finally
-            {
-                excelSheet = null;
-                excelworkBook = null;
             }
         }
 
@@ -270,7 +238,8 @@ namespace ExcelImport
 
                     dtOuptputExcel.Rows.Add(dr);
                 }
-                //dtOuptputExcel.Columns.Remove("URL_wo_Scheme");
+                dtOuptputExcel.Columns.Remove("URL_wo_Scheme");
+                dtOuptputExcel.Columns.Remove("Extension");
                 //string jsonoutput = DataTableToJSONWithJSONNet(dtOuptputExcel);
                 GenerateExcel(dtOuptputExcel, @"C:\Excel\CountReport.xlsx");
                 //WriteDataTableToExcel(dtOuptputExcel, "Count Report", @"C:\Users\Pragma Infotech\Desktop\Hiren\CountReport.xlsx");
@@ -358,7 +327,7 @@ namespace ExcelImport
             }
 
             excelWorkBook.SaveAs(path); // -> this will do the custom  
-            excelWorkBook.Close();
+            excelWorkBook.Close(0);
             excelApp.Quit();
         }
 
