@@ -67,6 +67,8 @@ namespace ExcelImport
                 progressBar1.Maximum = rw;
                 progressBar1.Step = 1;
                 List<string> urls = new List<string>();
+                lblStatus.Visible = true;
+                lblStatus.Text = "Data extraction process is in progress...";
                 for (rCnt = 2; rCnt <= rw; rCnt++)
                 {
                     progressBar1.PerformStep();
@@ -112,22 +114,28 @@ namespace ExcelImport
                                 bool isInValidURL = false;
                                 bool result = false;
                                 string urltype = string.Empty;
+                                int stBracketIndex, endBracketIndex, angularBracketIndex;
                                 foreach (var item in links)
                                 {
                                     string hrefValue = item.Attributes["href"].Value;
-                                    
-                                    if (hrefValue.IndexOf("</a>") > 0)
-                                    {
-                                        hrefValue = hrefValue.Substring(0, hrefValue.IndexOf("</a>"));
-                                    }
-                                    else if (hrefValue.IndexOf("</A>") > 0)
-                                    {
-                                        hrefValue = hrefValue.Substring(0, hrefValue.IndexOf("</A>"));
-                                    }
+                                    stBracketIndex = hrefValue.IndexOf("<");
+                                    endBracketIndex = hrefValue.IndexOf(">");
 
+                                    if (stBracketIndex > 0 || endBracketIndex > 0)
+                                    {
+                                        if (stBracketIndex > 0 && endBracketIndex > 0)
+                                        {
+                                            angularBracketIndex = (stBracketIndex > endBracketIndex) ? endBracketIndex : stBracketIndex;
+                                        }
+                                        else
+                                        {
+                                            angularBracketIndex = (stBracketIndex > 0) ? stBracketIndex : endBracketIndex;
+                                        }
+
+                                        hrefValue = hrefValue.Substring(0, angularBracketIndex);
+                                    }
 
                                     urls.Add(hrefValue);
-
 
 
                                     Uri uriResult;
@@ -168,10 +176,13 @@ namespace ExcelImport
 
                 GenerateCountReport(urls);
 
+                lblStatus.Text = "Main Report reletad data generation is in progress...";
                 //string jsonoutput = DataTableToJSONWithJSONNet(dtOuptpuExcel);
                 //WriteDataTableToExcel(dtOuptpuExcel, "Report", @"C:\Users\Pragma Infotech\Desktop\Hiren\Report.xlsx");
+                lblStatus.Text = "Generating main report excel...";
                 GenerateExcel(dtOuptpuExcel, @"C:\Excel\Report.xlsx");
 
+                lblStatus.Visible = false;
 
                 //xlWorkBook.Close(true, null, null);
                 xlWorkBook.Close(0);
@@ -201,7 +212,7 @@ namespace ExcelImport
             try
             {
 
-
+                lblStatus.Text = "Count Report reletad data generation is in progress...";
                 var urlsGroups = urls.GroupBy(i => i)
                             .Select(grp => new
                             {
@@ -217,6 +228,7 @@ namespace ExcelImport
                 dtOuptputExcel.Columns.Add("URL_wo_Scheme", typeof(string));
                 dtOuptputExcel.Columns.Add("Extension", typeof(string));
                 dtOuptputExcel.Columns.Add("DocType", typeof(string));
+
                 foreach (var item in urlsGroups)
                 {
                     Uri uriResult;
@@ -241,6 +253,7 @@ namespace ExcelImport
                 dtOuptputExcel.Columns.Remove("URL_wo_Scheme");
                 dtOuptputExcel.Columns.Remove("Extension");
                 //string jsonoutput = DataTableToJSONWithJSONNet(dtOuptputExcel);
+                lblStatus.Text = "Generating Count report excel...";
                 GenerateExcel(dtOuptputExcel, @"C:\Excel\CountReport.xlsx");
                 //WriteDataTableToExcel(dtOuptputExcel, "Count Report", @"C:\Users\Pragma Infotech\Desktop\Hiren\CountReport.xlsx");
             }
@@ -276,7 +289,7 @@ namespace ExcelImport
         {
             string pattern = @"\.\w{3,4}($|\?)";
             RegexOptions options = RegexOptions.Multiline;
-            List<string> docextensions = new List<string> { ".doc", ".docx", ".pdf", ".jpeg", ".txt", ".bmp", ".png", ".mp3", ".mp4", ".ppt", ".mov" };
+            List<string> docextensions = new List<string> { ".doc", ".docx", ".pdf", ".jpeg", ".jpg", ".txt", ".bmp", ".png", ".mp3", ".mp4", ".ppt", ".mov" };
             List<string> pageextensions = new List<string> { ".aspx", ".html", ".php", ".htm", ".jsp" };
 
             foreach (Match m in Regex.Matches(url, pattern, options))
@@ -295,40 +308,49 @@ namespace ExcelImport
         }
         public static void GenerateExcel(DataTable dataTable, string path)
         {
-
-            DataSet dataSet = new DataSet();
-            dataSet.Tables.Add(dataTable);
-
-            // create a excel app along side with workbook and worksheet and give a name to it  
-            Microsoft.Office.Interop.Excel.Application excelApp = new Microsoft.Office.Interop.Excel.Application();
-            Microsoft.Office.Interop.Excel.Workbook excelWorkBook = excelApp.Workbooks.Add();
-            Microsoft.Office.Interop.Excel._Worksheet xlWorksheet = excelWorkBook.Sheets[1];
-            Microsoft.Office.Interop.Excel.Range xlRange = xlWorksheet.UsedRange;
-            foreach (DataTable table in dataSet.Tables)
+            try
             {
-                //Add a new worksheet to workbook with the Datatable name  
-                Microsoft.Office.Interop.Excel.Worksheet excelWorkSheet = excelWorkBook.Sheets.Add();
-                excelWorkSheet.Name = table.TableName;
 
-                // add all the columns  
-                for (int i = 1; i < table.Columns.Count + 1; i++)
-                {
-                    excelWorkSheet.Cells[1, i] = table.Columns[i - 1].ColumnName;
-                }
 
-                // add all the rows  
-                for (int j = 0; j < table.Rows.Count; j++)
+                DataSet dataSet = new DataSet();
+                dataSet.Tables.Add(dataTable);
+
+                // create a excel app along side with workbook and worksheet and give a name to it  
+                Microsoft.Office.Interop.Excel.Application excelApp = new Microsoft.Office.Interop.Excel.Application();
+                Microsoft.Office.Interop.Excel.Workbook excelWorkBook = excelApp.Workbooks.Add();
+                //Microsoft.Office.Interop.Excel._Worksheet xlWorksheet = excelWorkBook.Sheets[1];
+                //Microsoft.Office.Interop.Excel.Range xlRange = xlWorksheet.UsedRange;
+                foreach (DataTable table in dataSet.Tables)
                 {
-                    for (int k = 0; k < table.Columns.Count; k++)
+                    //Add a new worksheet to workbook with the Datatable name  
+                    Microsoft.Office.Interop.Excel.Worksheet excelWorkSheet = excelWorkBook.Sheets.Add();
+                    excelWorkSheet.Name = table.TableName;
+
+                    // add all the columns  
+                    for (int i = 1; i < table.Columns.Count + 1; i++)
                     {
-                        excelWorkSheet.Cells[j + 2, k + 1] = table.Rows[j].ItemArray[k].ToString();
+                        excelWorkSheet.Cells[1, i] = table.Columns[i - 1].ColumnName;
+                    }
+
+                    // add all the rows  
+                    for (int j = 0; j < table.Rows.Count; j++)
+                    {
+                        for (int k = 0; k < table.Columns.Count; k++)
+                        {
+                            excelWorkSheet.Cells[j + 2, k + 1] = table.Rows[j].ItemArray[k].ToString();
+                        }
                     }
                 }
-            }
 
-            excelWorkBook.SaveAs(path); // -> this will do the custom  
-            excelWorkBook.Close(0);
-            excelApp.Quit();
+                excelWorkBook.SaveAs(path); // -> this will do the custom  
+                excelWorkBook.Close(0);
+                excelApp.Quit();
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
         }
 
 

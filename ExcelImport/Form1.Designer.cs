@@ -33,6 +33,7 @@ namespace ExcelImport
             this.txtPath = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.lblStatus = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // button1
@@ -70,16 +71,30 @@ namespace ExcelImport
             this.progressBar1.TabIndex = 3;
             this.progressBar1.Visible = false;
             // 
+            // lblStatus
+            // 
+            this.lblStatus.AutoSize = true;
+            this.lblStatus.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.lblStatus.ForeColor = System.Drawing.Color.DarkOliveGreen;
+            this.lblStatus.Location = new System.Drawing.Point(43, 105);
+            this.lblStatus.Name = "lblStatus";
+            this.lblStatus.Size = new System.Drawing.Size(40, 15);
+            this.lblStatus.TabIndex = 4;
+            this.lblStatus.Text = "label2";
+            this.lblStatus.Visible = false;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(742, 132);
+            this.Controls.Add(this.lblStatus);
             this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.txtPath);
             this.Controls.Add(this.button1);
             this.Name = "Form1";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Validate Excel for HTML and URL";
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -89,10 +104,10 @@ namespace ExcelImport
         #endregion
 
         private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox txtPath;
         private System.Windows.Forms.ProgressBar progressBar1;
+        private System.Windows.Forms.Label lblStatus;
     }
 }
 
