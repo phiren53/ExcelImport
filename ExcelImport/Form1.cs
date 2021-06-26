@@ -26,153 +26,10 @@ namespace ExcelImport
             try
             {
 
-
-                progressBar1.Visible = true;
-                Microsoft.Office.Interop.Excel.Application xlApp;
-                Microsoft.Office.Interop.Excel.Workbook xlWorkBook;
-                Microsoft.Office.Interop.Excel.Worksheet xlWorkSheet;
-                Microsoft.Office.Interop.Excel.Range range;
-
-                string str;
-                int rCnt;
-                int cCnt;
-                int rw = 0;
-                int cl = 0;
-
-                xlApp = new Microsoft.Office.Interop.Excel.Application();
-                //xlWorkBook = xlApp.Workbooks.Open(@"C:\Users\Pragma Infotech\Downloads\Hiren Download\FWS Website Main.xlsx", 0, true, 5, "", "", true, Microsoft.Office.Interop.Excel.XlPlatform.xlWindows, "\t", false, false, 0, true, 1, 0);
-                //xlWorkBook = xlApp.Workbooks.Open(@"C:\Users\Pragma Infotech\Downloads\Hiren Download\ReadExcelToGrid\ReadExcelToGrid\App_Data\Sample.xlsx", 0, true, 5, "", "", true, Microsoft.Office.Interop.Excel.XlPlatform.xlWindows, "\t", false, false, 0, true, 1, 0);
-
-
-                if (String.IsNullOrEmpty(txtPath.Text.ToString()))
-                {
-                    MessageBox.Show("Enter Excel File Path.");
-                    return;
-                }
-
-                xlWorkBook = xlApp.Workbooks.Open(txtPath.Text.ToString(), 0, true, 5, "", "", true, Microsoft.Office.Interop.Excel.XlPlatform.xlWindows, "\t", false, false, 0, true, 1, 0);
-                xlWorkSheet = (Microsoft.Office.Interop.Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
-
-                range = xlWorkSheet.UsedRange;
-                rw = range.Rows.Count;
-                cl = range.Columns.Count;
-                DataTable dtOuptpuExcel = new DataTable();
-                dtOuptpuExcel.Columns.Add("Body", typeof(string));
-                dtOuptpuExcel.Columns.Add("Is Valid HTML", typeof(string));
-                dtOuptpuExcel.Columns.Add("Is Valid URL", typeof(string));
-                //dtOuptpuExcel.Columns.Add("URL type", typeof(string));
-                dtOuptpuExcel.Columns.Add("Is fws.gov", typeof(string));
-                dtOuptpuExcel.Columns.Add("Is MailTo", typeof(string));
-
-                progressBar1.Maximum = rw;
-                progressBar1.Step = 1;
                 List<string> urls = new List<string>();
-                lblStatus.Visible = true;
-                lblStatus.Text = "Data extraction process is in progress...";
-                for (rCnt = 2; rCnt <= rw; rCnt++)
-                {
-                    progressBar1.PerformStep();
-                    for (cCnt = 1; cCnt <= cl; cCnt++)
-                    {
-                        str = (string)(range.Cells[rCnt, cCnt] as Microsoft.Office.Interop.Excel.Range).Value2;
+                DataTable dtOuptpuExcel = new DataTable();
 
-                        #region HtmlAgilityPack
-                        HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
-                        DataRow drCurrentRow = dtOuptpuExcel.NewRow();
-                        drCurrentRow["Body"] = str;
-
-                        if (string.IsNullOrEmpty(str))
-                        {
-                            drCurrentRow["Is Valid HTML"] = "N/A";
-                            drCurrentRow["Is Valid URL"] = "N/A";
-                            //drCurrentRow["URL type"] = "N/A";
-                            dtOuptpuExcel.Rows.Add(drCurrentRow);
-                            continue;
-                        }
-
-                        doc.LoadHtml(str);
-
-                        if (doc.ParseErrors.Count() > 0)
-                        {
-                            //Invalid HTML
-                            drCurrentRow["Is Valid HTML"] = "Invalid";
-                            drCurrentRow["Is Valid URL"] = "N/A";
-                            //drCurrentRow["URL type"] = "N/A";
-                        }
-                        else
-                        {
-                            //Valid
-                            drCurrentRow["Is Valid HTML"] = "Valid";
-
-                            if (doc.DocumentNode.Descendants("a").Count() > 0)
-                            {
-
-                                IEnumerable<HtmlNode> links = doc.DocumentNode.Descendants("a")
-                                                           .Where(x => x.Attributes["href"] != null
-                                                            && x.Attributes["href"].Value != null);
-                                //string urlOutput = "";
-                                bool isInValidURL = false;
-                                bool result = false;
-                                string urltype = string.Empty;
-                                int stBracketIndex, endBracketIndex, angularBracketIndex;
-                                foreach (var item in links)
-                                {
-                                    string hrefValue = item.Attributes["href"].Value;
-                                    stBracketIndex = hrefValue.IndexOf("<");
-                                    endBracketIndex = hrefValue.IndexOf(">");
-
-                                    if (stBracketIndex > 0 || endBracketIndex > 0)
-                                    {
-                                        if (stBracketIndex > 0 && endBracketIndex > 0)
-                                        {
-                                            angularBracketIndex = (stBracketIndex > endBracketIndex) ? endBracketIndex : stBracketIndex;
-                                        }
-                                        else
-                                        {
-                                            angularBracketIndex = (stBracketIndex > 0) ? stBracketIndex : endBracketIndex;
-                                        }
-
-                                        hrefValue = hrefValue.Substring(0, angularBracketIndex);
-                                    }
-
-                                    urls.Add(hrefValue);
-
-
-                                    Uri uriResult;
-                                    result = Uri.TryCreate(hrefValue, UriKind.Absolute, out uriResult)
-                                        && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
-
-
-                                    if (!result)
-                                    {
-                                        isInValidURL = true;
-                                    }
-                                    else
-                                    {
-                                        if (hrefValue.Contains("www.fws.gov"))
-                                        {
-                                            drCurrentRow["Is fws.gov"] = "Yes";
-                                        }
-                                    }
-
-                                    if (hrefValue.Contains("mailto:"))
-                                    {
-                                        drCurrentRow["Is MailTo"] = "Yes";
-                                    }
-                                }
-
-                                drCurrentRow["Is Valid URL"] = isInValidURL ? "InValid" : (result ? "Valid" : "InValid");
-
-                            }
-                        }
-
-                        dtOuptpuExcel.Rows.Add(drCurrentRow);
-
-                        #endregion
-
-                    }
-                }
-
+                ReadExcel(out dtOuptpuExcel, out urls);
 
                 GenerateCountReport(urls);
 
@@ -183,15 +40,6 @@ namespace ExcelImport
                 GenerateExcel(dtOuptpuExcel, @"C:\Excel\Report.xlsx");
 
                 lblStatus.Visible = false;
-
-                //xlWorkBook.Close(true, null, null);
-                xlWorkBook.Close(0);
-                xlApp.Quit();
-
-                Marshal.ReleaseComObject(xlWorkSheet);
-                Marshal.ReleaseComObject(xlWorkBook);
-                Marshal.ReleaseComObject(xlApp);
-
 
                 MessageBox.Show("Report generated successfully.");
 
@@ -205,6 +53,165 @@ namespace ExcelImport
             }
         }
 
+        private void ReadExcel(out DataTable dtOuptpuExcel, out List<string> urls)
+        {
+            progressBar1.Visible = true;
+            Microsoft.Office.Interop.Excel.Application xlApp;
+            Microsoft.Office.Interop.Excel.Workbook xlWorkBook;
+            Microsoft.Office.Interop.Excel.Worksheet xlWorkSheet;
+            Microsoft.Office.Interop.Excel.Range range;
+
+            urls = new List<string>();
+
+            dtOuptpuExcel = new DataTable();
+            dtOuptpuExcel.Columns.Add("Body", typeof(string));
+            dtOuptpuExcel.Columns.Add("Is Valid HTML", typeof(string));
+            dtOuptpuExcel.Columns.Add("Is Valid URL", typeof(string));
+            dtOuptpuExcel.Columns.Add("Is fws.gov", typeof(string));
+            dtOuptpuExcel.Columns.Add("Is MailTo", typeof(string));
+
+            string str;
+            int rCnt;
+            int cCnt;
+            int rw = 0;
+            int cl = 0;
+
+            xlApp = new Microsoft.Office.Interop.Excel.Application();
+            //xlWorkBook = xlApp.Workbooks.Open(@"C:\Users\Pragma Infotech\Downloads\Hiren Download\FWS Website Main.xlsx", 0, true, 5, "", "", true, Microsoft.Office.Interop.Excel.XlPlatform.xlWindows, "\t", false, false, 0, true, 1, 0);
+            //xlWorkBook = xlApp.Workbooks.Open(@"C:\Users\Pragma Infotech\Downloads\Hiren Download\ReadExcelToGrid\ReadExcelToGrid\App_Data\Sample.xlsx", 0, true, 5, "", "", true, Microsoft.Office.Interop.Excel.XlPlatform.xlWindows, "\t", false, false, 0, true, 1, 0);
+
+
+            if (String.IsNullOrEmpty(txtPath.Text.ToString()))
+            {
+                MessageBox.Show("Enter Excel File Path.");
+                return;
+            }
+
+            xlWorkBook = xlApp.Workbooks.Open(txtPath.Text.ToString(), 0, true, 5, "", "", true, Microsoft.Office.Interop.Excel.XlPlatform.xlWindows, "\t", false, false, 0, true, 1, 0);
+            xlWorkSheet = (Microsoft.Office.Interop.Excel.Worksheet)xlWorkBook.Worksheets.get_Item(1);
+
+            range = xlWorkSheet.UsedRange;
+            rw = range.Rows.Count;
+            cl = range.Columns.Count;
+
+
+            progressBar1.Maximum = rw;
+            progressBar1.Step = 1;
+
+            lblStatus.Visible = true;
+            lblStatus.Text = "Data extraction process is in progress...";
+            for (rCnt = 2; rCnt <= rw; rCnt++)
+            {
+                progressBar1.PerformStep();
+                for (cCnt = 1; cCnt <= cl; cCnt++)
+                {
+                    str = (string)(range.Cells[rCnt, cCnt] as Microsoft.Office.Interop.Excel.Range).Value2;
+
+                    #region HtmlAgilityPack
+                    HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
+                    DataRow drCurrentRow = dtOuptpuExcel.NewRow();
+                    drCurrentRow["Body"] = str;
+
+                    if (string.IsNullOrEmpty(str))
+                    {
+                        drCurrentRow["Is Valid HTML"] = "N/A";
+                        drCurrentRow["Is Valid URL"] = "N/A";
+                        //drCurrentRow["URL type"] = "N/A";
+                        dtOuptpuExcel.Rows.Add(drCurrentRow);
+                        continue;
+                    }
+
+                    doc.LoadHtml(str);
+
+                    if (doc.ParseErrors.Count() > 0)
+                    {
+                        //Invalid HTML
+                        drCurrentRow["Is Valid HTML"] = "Invalid";
+                        drCurrentRow["Is Valid URL"] = "N/A";
+                        //drCurrentRow["URL type"] = "N/A";
+                    }
+                    else
+                    {
+                        //Valid
+                        drCurrentRow["Is Valid HTML"] = "Valid";
+
+                        if (doc.DocumentNode.Descendants("a").Count() > 0)
+                        {
+
+                            IEnumerable<HtmlNode> links = doc.DocumentNode.Descendants("a")
+                                                       .Where(x => x.Attributes["href"] != null
+                                                        && x.Attributes["href"].Value != null);
+                            //string urlOutput = "";
+                            bool isInValidURL = false;
+                            bool result = false;
+                            string urltype = string.Empty;
+                            int stBracketIndex, endBracketIndex, angularBracketIndex;
+                            foreach (var item in links)
+                            {
+                                string hrefValue = item.Attributes["href"].Value;
+                                stBracketIndex = hrefValue.IndexOf("<");
+                                endBracketIndex = hrefValue.IndexOf(">");
+
+                                if (stBracketIndex > 0 || endBracketIndex > 0)
+                                {
+                                    if (stBracketIndex > 0 && endBracketIndex > 0)
+                                    {
+                                        angularBracketIndex = (stBracketIndex > endBracketIndex) ? endBracketIndex : stBracketIndex;
+                                    }
+                                    else
+                                    {
+                                        angularBracketIndex = (stBracketIndex > 0) ? stBracketIndex : endBracketIndex;
+                                    }
+
+                                    hrefValue = hrefValue.Substring(0, angularBracketIndex);
+                                }
+
+                                urls.Add(hrefValue);
+
+
+                                Uri uriResult;
+                                result = Uri.TryCreate(hrefValue, UriKind.Absolute, out uriResult)
+                                    && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+
+
+                                if (!result)
+                                {
+                                    isInValidURL = true;
+                                }
+                                else
+                                {
+                                    if (hrefValue.Contains("www.fws.gov"))
+                                    {
+                                        drCurrentRow["Is fws.gov"] = "Yes";
+                                    }
+                                }
+
+                                if (hrefValue.Contains("mailto:"))
+                                {
+                                    drCurrentRow["Is MailTo"] = "Yes";
+                                }
+                            }
+
+                            drCurrentRow["Is Valid URL"] = isInValidURL ? "InValid" : (result ? "Valid" : "InValid");
+
+                        }
+                    }
+
+                    dtOuptpuExcel.Rows.Add(drCurrentRow);
+
+                    #endregion
+
+                }
+            }
+
+            //xlWorkBook.Close(true, null, null);
+            xlWorkBook.Close(0);
+            xlApp.Quit();
+
+            Marshal.ReleaseComObject(xlWorkSheet);
+            Marshal.ReleaseComObject(xlWorkBook);
+            Marshal.ReleaseComObject(xlApp);
+        }
 
         public void GenerateCountReport(List<string> urls)
         {
@@ -359,6 +366,76 @@ namespace ExcelImport
             string JSONString = string.Empty;
             JSONString = JsonConvert.SerializeObject(table);
             return JSONString;
+        }
+
+        private void btnGetJson_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                DataTable dtExcelData, dtParentChildData = new DataTable();
+
+                dtParentChildData.Columns.Add("URL_Data", typeof(string));
+                dtParentChildData.Columns.Add("ID", typeof(int));
+                dtParentChildData.Columns.Add("PARENT_ID", typeof(int));
+
+                List<string> urls = new List<string>();
+                ReadExcel(out dtExcelData, out urls);
+                string urlDetail = string.Empty;
+                int idSequence = 0;
+
+                foreach (string item in urls)
+                {
+                    urlDetail = item;
+                    if (urlDetail.Substring(0, 7) == "http://")
+                    {
+                        urlDetail = urlDetail.Remove(0, 7);
+                    }
+                    else if (urlDetail.Substring(0, 8) == "https://")
+                    {
+                        urlDetail = urlDetail.Remove(0, 8);
+                    }
+
+                    string[] strArrURLPaths = urlDetail.Split("/");
+                    foreach (var path in strArrURLPaths)
+                    {
+                        DataRow[] drArrPath = dtParentChildData.Select("URL_Data = '" + path + "'");
+                        if (drArrPath.Length == 0)
+                        {
+                            DataRow drNewRow = dtParentChildData.NewRow();
+                            //generated new id for path if not exists...
+                            idSequence++;
+
+                            drNewRow["URL_Data"] = path;
+                            drNewRow["ID"] = idSequence;
+
+                            //Find Parent id...
+                            string parentPath = string.Join('/', strArrURLPaths.Take(Array.IndexOf(strArrURLPaths, path)));
+                            if (!string.IsNullOrEmpty(parentPath))
+                            {
+                                DataRow[] drparentRow = dtParentChildData.Select("URL_Data = '" + parentPath + "'");
+                                if (drparentRow.Length > 0)
+                                {
+                                    drNewRow["PARENT_ID"] = int.Parse(drparentRow[0]["ID"].ToString());
+                                }
+                            }
+                            dtParentChildData.Rows.Add(drNewRow);
+                            
+                        }
+                        else
+                        {
+                            //If path exists in tree then nothing to do...
+                        }
+
+
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
         }
     }
 }

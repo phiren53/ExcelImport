@@ -34,6 +34,7 @@ namespace ExcelImport
             this.label1 = new System.Windows.Forms.Label();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.lblStatus = new System.Windows.Forms.Label();
+            this.btnGetJson = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button1
@@ -65,9 +66,9 @@ namespace ExcelImport
             // 
             // progressBar1
             // 
-            this.progressBar1.Location = new System.Drawing.Point(170, 75);
+            this.progressBar1.Location = new System.Drawing.Point(306, 75);
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(551, 23);
+            this.progressBar1.Size = new System.Drawing.Size(415, 23);
             this.progressBar1.TabIndex = 3;
             this.progressBar1.Visible = false;
             // 
@@ -83,11 +84,22 @@ namespace ExcelImport
             this.lblStatus.Text = "label2";
             this.lblStatus.Visible = false;
             // 
+            // btnGetJson
+            // 
+            this.btnGetJson.Location = new System.Drawing.Point(169, 76);
+            this.btnGetJson.Name = "btnGetJson";
+            this.btnGetJson.Size = new System.Drawing.Size(120, 23);
+            this.btnGetJson.TabIndex = 5;
+            this.btnGetJson.Text = "Generate JSON";
+            this.btnGetJson.UseVisualStyleBackColor = true;
+            this.btnGetJson.Click += new System.EventHandler(this.btnGetJson_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(742, 132);
+            this.Controls.Add(this.btnGetJson);
             this.Controls.Add(this.lblStatus);
             this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.label1);
@@ -108,6 +120,7 @@ namespace ExcelImport
         private System.Windows.Forms.TextBox txtPath;
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.Label lblStatus;
+        private System.Windows.Forms.Button btnGetJson;
     }
 }
 
