@@ -370,6 +370,7 @@ namespace ExcelImport
 
         private void btnGetJson_Click(object sender, EventArgs e)
         {
+            string currentURL = string.Empty;
             try
             {
                 DataTable dtExcelData, dtParentChildData = new DataTable();
@@ -377,59 +378,97 @@ namespace ExcelImport
                 dtParentChildData.Columns.Add("URL_Data", typeof(string));
                 dtParentChildData.Columns.Add("ID", typeof(int));
                 dtParentChildData.Columns.Add("PARENT_ID", typeof(int));
+                dtParentChildData.Columns.Add("ORG_PATH", typeof(string));
 
                 List<string> urls = new List<string>();
                 ReadExcel(out dtExcelData, out urls);
-                string urlDetail = string.Empty;
+                string urlDetail = string.Empty, orgpath = string.Empty;
                 int idSequence = 0;
 
-                foreach (string item in urls)
+                var urlsGroups = urls.GroupBy(i => i)
+                            .Select(grp => new
+                            {
+                                URL = grp.Key,
+                                TotalCount = grp.Count()
+                            })
+                            .ToArray();
+
+                foreach (var item in urlsGroups)
                 {
-                    urlDetail = item;
-                    if (urlDetail.Substring(0, 7) == "http://")
+                    urlDetail = item.URL;
+                    try
                     {
-                        urlDetail = urlDetail.Remove(0, 7);
-                    }
-                    else if (urlDetail.Substring(0, 8) == "https://")
-                    {
-                        urlDetail = urlDetail.Remove(0, 8);
-                    }
 
-                    string[] strArrURLPaths = urlDetail.Split("/");
-                    foreach (var path in strArrURLPaths)
-                    {
-                        DataRow[] drArrPath = dtParentChildData.Select("URL_Data = '" + path + "'");
-                        if (drArrPath.Length == 0)
+
+                        currentURL = urlDetail;
+                        if (currentURL.Trim() == "")
                         {
-                            DataRow drNewRow = dtParentChildData.NewRow();
-                            //generated new id for path if not exists...
-                            idSequence++;
+                            continue;
+                        }
 
-                            drNewRow["URL_Data"] = path;
-                            drNewRow["ID"] = idSequence;
+                        if (urlDetail.Length >= 7 && urlDetail.Substring(0, 7) == "http://")
+                        {
+                            urlDetail = urlDetail.Remove(0, 7);
+                        }
+                        else if (urlDetail.Length >= 8 && urlDetail.Substring(0, 8) == "https://")
+                        {
+                            urlDetail = urlDetail.Remove(0, 8);
+                        }
+
+                        string[] strArrURLPaths = urlDetail.Split("/");
+
+                        foreach (var path in strArrURLPaths)
+                        {
+                            if (string.IsNullOrEmpty(path)) continue;
+
+                            string newPath = path.Replace("'", "");
 
                             //Find Parent id...
-                            string parentPath = string.Join('/', strArrURLPaths.Take(Array.IndexOf(strArrURLPaths, path)));
-                            if (!string.IsNullOrEmpty(parentPath))
+                            string parentPath = string.Join('/', strArrURLPaths.Take(Array.IndexOf(strArrURLPaths, newPath)));
+                            orgpath = parentPath + (!string.IsNullOrEmpty(parentPath) ? "/" : "") + newPath;
+                            DataRow[] drArrPath = dtParentChildData.Select("ORG_PATH = '" + orgpath.Replace("'", "") + "'");
+                            if (drArrPath.Length == 0)
                             {
-                                DataRow[] drparentRow = dtParentChildData.Select("URL_Data = '" + parentPath + "'");
-                                if (drparentRow.Length > 0)
+                                DataRow drNewRow = dtParentChildData.NewRow();
+                                //generated new id for path if not exists...
+                                idSequence++;
+
+                                drNewRow["URL_Data"] = path;
+                                drNewRow["ID"] = idSequence;
+                                drNewRow["ORG_PATH"] = orgpath;
+
+                                if (!string.IsNullOrEmpty(parentPath))
                                 {
-                                    drNewRow["PARENT_ID"] = int.Parse(drparentRow[0]["ID"].ToString());
+                                    DataRow[] drparentRow = dtParentChildData.Select("ORG_PATH = '" + parentPath.Replace("'", "") + "'");
+                                    if (drparentRow.Length > 0)
+                                    {
+                                        drNewRow["PARENT_ID"] = int.Parse(drparentRow[0]["ID"].ToString());
+                                    }
                                 }
+                                else
+                                {
+                                    drNewRow["PARENT_ID"] = 0;
+                                }
+                                dtParentChildData.Rows.Add(drNewRow);
+
                             }
-                            dtParentChildData.Rows.Add(drNewRow);
-                            
+                            else
+                            {
+                                //If path exists in tree then nothing to do...
+                            }
+
+
+
                         }
-                        else
-                        {
-                            //If path exists in tree then nothing to do...
-                        }
+                    }
+                    catch (Exception)
+                    {
 
-
-
+                        throw;
                     }
                 }
+
+                string jsonTreeViewData = DataTableToJSONWithJSONNet(dtParentChildData);
             }
             catch (Exception ex)
             {
