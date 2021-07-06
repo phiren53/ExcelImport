@@ -28,8 +28,9 @@ namespace ExcelImport
 
                 List<string> urls = new List<string>();
                 DataTable dtOuptpuExcel = new DataTable();
+                var urllistwithBody = new List<KeyValuePair<string, string>>();
 
-                ReadExcel(out dtOuptpuExcel, out urls);
+                ReadExcel(out dtOuptpuExcel, out urls,out urllistwithBody);
 
                 GenerateCountReport(urls);
 
@@ -53,14 +54,14 @@ namespace ExcelImport
             }
         }
 
-        private void ReadExcel(out DataTable dtOuptpuExcel, out List<string> urls)
+        private void ReadExcel(out DataTable dtOuptpuExcel, out List<string> urls,out List<KeyValuePair<string, string>> urllistwithBody)
         {
             progressBar1.Visible = true;
             Microsoft.Office.Interop.Excel.Application xlApp;
             Microsoft.Office.Interop.Excel.Workbook xlWorkBook;
             Microsoft.Office.Interop.Excel.Worksheet xlWorkSheet;
             Microsoft.Office.Interop.Excel.Range range;
-
+            urllistwithBody = new List<KeyValuePair<string, string>>();
             urls = new List<string>();
 
             dtOuptpuExcel = new DataTable();
@@ -167,7 +168,7 @@ namespace ExcelImport
                                 }
 
                                 urls.Add(hrefValue);
-
+                                urllistwithBody.Add(new KeyValuePair<string, string>(hrefValue, str));
 
                                 Uri uriResult;
                                 result = Uri.TryCreate(hrefValue, UriKind.Absolute, out uriResult)
@@ -379,11 +380,20 @@ namespace ExcelImport
                 dtParentChildData.Columns.Add("ID", typeof(int));
                 dtParentChildData.Columns.Add("PARENT_ID", typeof(int));
                 dtParentChildData.Columns.Add("ORG_PATH", typeof(string));
+                dtParentChildData.Columns.Add("URL_COUNT", typeof(string));
+                dtParentChildData.Columns.Add("ORG_URL", typeof(string)); 
 
                 List<string> urls = new List<string>();
-                ReadExcel(out dtExcelData, out urls);
+                var urllistwithBody = new List<KeyValuePair<string, string>>();
+
+                ReadExcel(out dtExcelData, out urls,out urllistwithBody);
                 string urlDetail = string.Empty, orgpath = string.Empty;
                 int idSequence = 0;
+
+                //var outp = JsonConvert.SerializeObject(urllistwithBody);
+                
+                // Write that JSON to txt file,  
+                //System.IO.File.WriteAllText(@"C:\Users\Pragma Infotech\Desktop\Hiren\ExcelImport\ExcelImport\bin\Debug\AppData\" + "output.json", outp);
 
                 var urlsGroups = urls.GroupBy(i => i)
                             .Select(grp => new
@@ -399,8 +409,9 @@ namespace ExcelImport
                     try
                     {
 
-
                         currentURL = urlDetail;
+                        //IList<KeyValuePair<string, string>> result = urllistwithBody.Where(v => v.Key == urlDetail.ToString()).ToList();
+                        
                         if (currentURL.Trim() == "")
                         {
                             continue;
@@ -436,6 +447,7 @@ namespace ExcelImport
                                 drNewRow["URL_Data"] = path;
                                 drNewRow["ID"] = idSequence;
                                 drNewRow["ORG_PATH"] = orgpath;
+                                drNewRow["ORG_URL"] = currentURL; 
 
                                 if (!string.IsNullOrEmpty(parentPath))
                                 {
@@ -449,6 +461,7 @@ namespace ExcelImport
                                 {
                                     drNewRow["PARENT_ID"] = 0;
                                 }
+                                drNewRow["URL_COUNT"] = item.TotalCount;
                                 dtParentChildData.Rows.Add(drNewRow);
 
                             }
