@@ -36,6 +36,7 @@ namespace ExcelImport
             this.lblStatus = new System.Windows.Forms.Label();
             this.btnGetJson = new System.Windows.Forms.Button();
             this.btnNewJson = new System.Windows.Forms.Button();
+            this.btnURLReplace = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button1
@@ -67,7 +68,7 @@ namespace ExcelImport
             // 
             // progressBar1
             // 
-            this.progressBar1.Location = new System.Drawing.Point(325, 76);
+            this.progressBar1.Location = new System.Drawing.Point(325, 106);
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(405, 23);
             this.progressBar1.TabIndex = 3;
@@ -103,12 +104,24 @@ namespace ExcelImport
             this.btnNewJson.TabIndex = 6;
             this.btnNewJson.Text = "New JSON";
             this.btnNewJson.UseVisualStyleBackColor = true;
+            this.btnNewJson.Click += new System.EventHandler(this.btnNewJson_Click);
+            // 
+            // btnURLReplace
+            // 
+            this.btnURLReplace.Location = new System.Drawing.Point(325, 76);
+            this.btnURLReplace.Name = "btnURLReplace";
+            this.btnURLReplace.Size = new System.Drawing.Size(96, 23);
+            this.btnURLReplace.TabIndex = 7;
+            this.btnURLReplace.Text = "Find - Replace";
+            this.btnURLReplace.UseVisualStyleBackColor = true;
+            this.btnURLReplace.Click += new System.EventHandler(this.btnURLReplace_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(742, 132);
+            this.Controls.Add(this.btnURLReplace);
             this.Controls.Add(this.btnNewJson);
             this.Controls.Add(this.btnGetJson);
             this.Controls.Add(this.lblStatus);
@@ -133,6 +146,7 @@ namespace ExcelImport
         private System.Windows.Forms.Label lblStatus;
         private System.Windows.Forms.Button btnGetJson;
         private System.Windows.Forms.Button btnNewJson;
+        private System.Windows.Forms.Button btnURLReplace;
     }
 }
 
