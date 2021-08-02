@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using HtmlAgilityPack;
@@ -862,29 +864,29 @@ namespace ExcelImport
             {
                 UtilityMethod utilityMethod = new UtilityMethod();
                 string path = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                DataTable dtMappingData = utilityMethod.ReadExcel(path + "\\News Test Mappings.xlsx","xlsx");
+                DataTable dtMappingData = utilityMethod.ReadExcel(path + "\\News Test Mappings.xlsx", "xlsx", true);
 
                 #region Find and Replace in JSON
                 var urlsjson = System.IO.File.ReadAllText(@"C:\Users\Pragma Infotech\Desktop\Hiren\ExcelImport\ExcelImport\bin\Debug\AppData\" + "urldetailList.json");
 
                 List<URLDetail> urlList = JsonConvert.DeserializeObject<List<URLDetail>>(urlsjson);
-                DataTable dtUrlData = utilityMethod.ReadExcel(path + "\\News_27072021.xlsx", "xlsx");
+                DataTable dtUrlData = utilityMethod.ReadExcel(path + "\\News_27072021.xlsx", "xlsx", true);
                 dtUrlData.Columns.Add("New Body", typeof(string));
 
                 foreach (DataRow mappingItem in dtMappingData.Rows)
                 {
-                    
-                    
+
+
                     var matchedURLs = from url in urlList
-                                     where url.Body[4].ToLower().Contains(mappingItem["F1"].ToString().ToLower())
-                                     select url;
+                                      where url.Body[4].ToLower().Contains(mappingItem["F1"].ToString().ToLower())
+                                      select url;
 
                     foreach (var item in matchedURLs)
                     {
                         //Console.WriteLine($"{item.Name,-15}{item.Score}");
                         item.Body[4] = item.Body[4].ToLower().Replace(mappingItem["F1"].ToString(), mappingItem["F5"].ToString());
                         item.Body[3] = item.Body[3].ToLower().Replace(mappingItem["F1"].ToString(), mappingItem["F5"].ToString());
-                        item.ORG_PATH= item.ORG_PATH.ToLower().Replace(mappingItem["F1"].ToString(), mappingItem["F5"].ToString());
+                        item.ORG_PATH = item.ORG_PATH.ToLower().Replace(mappingItem["F1"].ToString(), mappingItem["F5"].ToString());
                         item.ORG_URL = item.ORG_URL.ToLower().Replace(mappingItem["F1"].ToString(), mappingItem["F5"].ToString());
                         item.URL_Data = item.ORG_URL.ToLower().Replace(mappingItem["F1"].ToString(), mappingItem["F5"].ToString());
                     }
@@ -922,7 +924,82 @@ namespace ExcelImport
                 GenerateExcel(dtUrlData, path + "\\NewBodyWithReplacedURL.xlsx");
                 #endregion
 
+                MessageBox.Show("Process completed.");
 
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        private void btnJSON_Click(object sender, EventArgs e)
+        {
+            try
+            {
+
+                UtilityMethod utilityMethod = new UtilityMethod();
+                DataTable dtExcelData = utilityMethod.ReadExcel(txtPath.Text, "xlsx", true);
+                string exceljson = utilityMethod.DataTableToJSONWithJSONNet(dtExcelData);
+                string path = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                System.IO.File.WriteAllText(path + "\\pdfbasedata.json", exceljson);
+
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        private void btnDownloadFile_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                UtilityMethod utilityMethod = new UtilityMethod();
+                DataTable dtExcelData = utilityMethod.ReadExcel(txtPath.Text, "xlsx", false);//Take Count Report File to process
+                DataRow[] dataRows = dtExcelData.Select("DocType = 'Document'");
+                StringBuilder sb = new StringBuilder();
+                progressBar1.Visible = true;
+                progressBar1.Maximum = dataRows.Length;
+                progressBar1.Step = 1;
+                foreach (DataRow item in dataRows)
+                {
+                    progressBar1.PerformStep();
+                    // A web URL with a file response
+                    string myWebUrlFile = item["URL"].ToString();
+
+                    if (myWebUrlFile.Contains("fws.gov"))
+                    {
+                        //string[] pathname = myWebUrlFile.Split("/");
+                        string filename = utilityMethod.GetURLFilename(myWebUrlFile);// pathname[pathname.Length - 1].ToString();
+                                                                                     // Local path where the file will be saved
+                        string myLocalFilePath = "C:/Excel/DownloadFiles/" + filename;
+
+                        if (!filename.Contains(".pdf")) continue;
+
+                        try
+                        {
+                            using (var client = new WebClient())
+                            {
+                                client.DownloadFile(myWebUrlFile, myLocalFilePath);
+                            }
+                        }
+                        catch (WebException we)
+                        {
+                            sb.AppendLine(myWebUrlFile);
+                            
+                        }
+                    }
+
+                }
+
+                using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:/Excel/DownloadFiles/ErrorPaths.txt"))
+                {
+                    file.WriteLine(sb.ToString()); // "sb" is the StringBuilder
+                }
+                progressBar1.Visible = false;
+                MessageBox.Show("Downloading completed.");
             }
             catch (Exception ex)
             {

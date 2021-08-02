@@ -37,6 +37,8 @@ namespace ExcelImport
             this.btnGetJson = new System.Windows.Forms.Button();
             this.btnNewJson = new System.Windows.Forms.Button();
             this.btnURLReplace = new System.Windows.Forms.Button();
+            this.btnJSON = new System.Windows.Forms.Button();
+            this.btnDownloadFile = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button1
@@ -116,11 +118,33 @@ namespace ExcelImport
             this.btnURLReplace.UseVisualStyleBackColor = true;
             this.btnURLReplace.Click += new System.EventHandler(this.btnURLReplace_Click);
             // 
+            // btnJSON
+            // 
+            this.btnJSON.Location = new System.Drawing.Point(427, 76);
+            this.btnJSON.Name = "btnJSON";
+            this.btnJSON.Size = new System.Drawing.Size(156, 23);
+            this.btnJSON.TabIndex = 8;
+            this.btnJSON.Text = "Generate JSON from Excel";
+            this.btnJSON.UseVisualStyleBackColor = true;
+            this.btnJSON.Click += new System.EventHandler(this.btnJSON_Click);
+            // 
+            // btnDownloadFile
+            // 
+            this.btnDownloadFile.Location = new System.Drawing.Point(589, 77);
+            this.btnDownloadFile.Name = "btnDownloadFile";
+            this.btnDownloadFile.Size = new System.Drawing.Size(156, 23);
+            this.btnDownloadFile.TabIndex = 9;
+            this.btnDownloadFile.Text = "Download FWS Pdf File";
+            this.btnDownloadFile.UseVisualStyleBackColor = true;
+            this.btnDownloadFile.Click += new System.EventHandler(this.btnDownloadFile_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(742, 132);
+            this.ClientSize = new System.Drawing.Size(965, 132);
+            this.Controls.Add(this.btnDownloadFile);
+            this.Controls.Add(this.btnJSON);
             this.Controls.Add(this.btnURLReplace);
             this.Controls.Add(this.btnNewJson);
             this.Controls.Add(this.btnGetJson);
@@ -147,6 +171,8 @@ namespace ExcelImport
         private System.Windows.Forms.Button btnGetJson;
         private System.Windows.Forms.Button btnNewJson;
         private System.Windows.Forms.Button btnURLReplace;
+        private System.Windows.Forms.Button btnJSON;
+        private System.Windows.Forms.Button btnDownloadFile;
     }
 }
 
