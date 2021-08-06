@@ -864,64 +864,68 @@ namespace ExcelImport
             {
                 UtilityMethod utilityMethod = new UtilityMethod();
                 string path = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                DataTable dtMappingData = utilityMethod.ReadExcel(path + "\\News Test Mappings.xlsx", "xlsx", true);
+                DataTable dtMappingData = utilityMethod.ReadExcel(path + "\\News Test Mappings.xlsx", "xlsx", false);
 
                 #region Find and Replace in JSON
                 var urlsjson = System.IO.File.ReadAllText(@"C:\Users\Pragma Infotech\Desktop\Hiren\ExcelImport\ExcelImport\bin\Debug\AppData\" + "urldetailList.json");
 
                 List<URLDetail> urlList = JsonConvert.DeserializeObject<List<URLDetail>>(urlsjson);
-                DataTable dtUrlData = utilityMethod.ReadExcel(path + "\\News_27072021.xlsx", "xlsx", true);
-                dtUrlData.Columns.Add("New Body", typeof(string));
+                DataTable dtUrlData = utilityMethod.ReadExcel(path + "\\News_29072021.xlsx", "xlsx", true);
+                //dtUrlData.Columns.Add("New Body", typeof(string));
 
                 foreach (DataRow mappingItem in dtMappingData.Rows)
                 {
 
 
                     var matchedURLs = from url in urlList
-                                      where url.Body[4].ToLower().Contains(mappingItem["F1"].ToString().ToLower())
+                                      where url.Body[4].ToLower().Contains(mappingItem["URL"].ToString().ToLower())
                                       select url;
 
                     foreach (var item in matchedURLs)
                     {
                         //Console.WriteLine($"{item.Name,-15}{item.Score}");
-                        item.Body[4] = item.Body[4].ToLower().Replace(mappingItem["F1"].ToString(), mappingItem["F5"].ToString());
-                        item.Body[3] = item.Body[3].ToLower().Replace(mappingItem["F1"].ToString(), mappingItem["F5"].ToString());
-                        item.ORG_PATH = item.ORG_PATH.ToLower().Replace(mappingItem["F1"].ToString(), mappingItem["F5"].ToString());
-                        item.ORG_URL = item.ORG_URL.ToLower().Replace(mappingItem["F1"].ToString(), mappingItem["F5"].ToString());
-                        item.URL_Data = item.ORG_URL.ToLower().Replace(mappingItem["F1"].ToString(), mappingItem["F5"].ToString());
+                        item.Body[4] = item.Body[4].ToLower().Replace(mappingItem["URL"].ToString(), mappingItem["Replacement URL"].ToString());
+                        item.Body[3] = item.Body[3].ToLower().Replace(mappingItem["URL"].ToString(), mappingItem["Replacement URL"].ToString());
+                        item.ORG_PATH = item.ORG_PATH.ToLower().Replace(mappingItem["URL"].ToString(), mappingItem["Replacement URL"].ToString());
+                        item.ORG_URL = item.ORG_URL.ToLower().Replace(mappingItem["URL"].ToString(), mappingItem["Replacement URL"].ToString());
+                        item.URL_Data = item.ORG_URL.ToLower().Replace(mappingItem["URL"].ToString(), mappingItem["Replacement URL"].ToString());
                     }
 
                     //To update Link in Body object
                     matchedURLs = from url in urlList
-                                  where url.Body[3].ToLower().Contains(mappingItem["F1"].ToString().ToLower())
+                                  where url.Body[3].ToLower().Contains(mappingItem["URL"].ToString().ToLower())
                                   select url;
 
                     foreach (var item in matchedURLs)
                     {
                         //Console.WriteLine($"{item.Name,-15}{item.Score}");
-                        item.Body[4] = item.Body[4].ToLower().Replace(mappingItem["F1"].ToString(), mappingItem["F5"].ToString());
-                        item.Body[3] = item.Body[3].ToLower().Replace(mappingItem["F1"].ToString(), mappingItem["F5"].ToString());
-                        item.ORG_PATH = item.ORG_PATH.ToLower().Replace(mappingItem["F1"].ToString(), mappingItem["F5"].ToString());
-                        item.ORG_URL = item.ORG_URL.ToLower().Replace(mappingItem["F1"].ToString(), mappingItem["F5"].ToString());
-                        item.URL_Data = item.ORG_URL.ToLower().Replace(mappingItem["F1"].ToString(), mappingItem["F5"].ToString());
+                        item.Body[4] = item.Body[4].ToLower().Replace(mappingItem["URL"].ToString(), mappingItem["Replacement URL"].ToString());
+                        item.Body[3] = item.Body[3].ToLower().Replace(mappingItem["URL"].ToString(), mappingItem["Replacement URL"].ToString());
+                        item.ORG_PATH = item.ORG_PATH.ToLower().Replace(mappingItem["URL"].ToString(), mappingItem["Replacement URL"].ToString());
+                        item.ORG_URL = item.ORG_URL.ToLower().Replace(mappingItem["URL"].ToString(), mappingItem["Replacement URL"].ToString());
+                        item.URL_Data = item.ORG_URL.ToLower().Replace(mappingItem["URL"].ToString(), mappingItem["Replacement URL"].ToString());
                     }
 
                     #region Add Replaced Body value in the Excel
 
                     var drArrmatchedURLs = from drurl in dtUrlData.AsEnumerable()
-                                           where drurl["F2"].ToString().Contains(mappingItem["F1"].ToString().ToLower())
+                                           where drurl["newbody"].ToString().Contains(mappingItem["URL"].ToString().ToLower())
                                            select drurl;
 
                     foreach (var drURL in drArrmatchedURLs)
                     {
-                        dtUrlData.Rows[dtUrlData.Rows.IndexOf(drURL)]["New Body"] = drURL["F2"].ToString().Replace(mappingItem["F1"].ToString(), mappingItem["F5"].ToString());
+                        dtUrlData.Rows[dtUrlData.Rows.IndexOf(drURL)]["newbody"] = drURL["newbody"].ToString().Replace(mappingItem["URL"].ToString(), mappingItem["Replacement URL"].ToString());
                     }
                     #endregion
 
                 }
                 string output = JsonConvert.SerializeObject(urlList);
                 System.IO.File.WriteAllText(@"C:\Users\Pragma Infotech\Desktop\Hiren\ExcelImport\ExcelImport\bin\Debug\AppData\" + "newreplacedurl.json", output);
-                GenerateExcel(dtUrlData, path + "\\NewBodyWithReplacedURL.xlsx");
+                //GenerateExcel(dtUrlData, path + "\\NewBodyWithReplacedURL.xlsx");
+                dtUrlData.Columns["newbody"].ColumnName = "body";
+                string output1 = utilityMethod.DataTableToJSONWithJSONNet(dtUrlData);
+                
+                System.IO.File.WriteAllText(@"C:\Users\Pragma Infotech\Desktop\Hiren\ExcelImport\ExcelImport\bin\Debug\AppData\" + "newreplacedurlwithdefaultText.json", output1);
                 #endregion
 
                 MessageBox.Show("Process completed.");
@@ -973,8 +977,8 @@ namespace ExcelImport
                     {
                         //string[] pathname = myWebUrlFile.Split("/");
                         string filename = utilityMethod.GetURLFilename(myWebUrlFile);// pathname[pathname.Length - 1].ToString();
-                                                                                     // Local path where the file will be saved
-                        string myLocalFilePath = "C:/Excel/DownloadFiles/" + filename;
+                                                                                     
+                        string myLocalFilePath = "C:/Excel/DownloadFiles/" + filename;// Local path where the file will be saved
 
                         if (!filename.Contains(".pdf")) continue;
 

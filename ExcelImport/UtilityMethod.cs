@@ -39,7 +39,9 @@ namespace ExcelImport
                     //OleDbDataAdapter oleAdpt = new OleDbDataAdapter("select Body,IIF(Body1 IS NULL,'hiren',Body1) AS temp,IIF(Body IS NULL,'IMNULL',MID(Body,LEN(Body) - 3,4)) As bodylen from [Sheet1$]", con); //here we read data from sheet1
                     if (IswithQuery)
                     {
-                        oleAdpt = new OleDbDataAdapter("select News_ID, DatePublished, Title, Alias, link, MoreInfo, posted, body, IIF((LEN(body) = 0 AND LEN(link) > 0 AND MID(link,LEN(link) - 3,4) = '.pdf'), 'This archived news release was scanned from a paper copy that may show damage or excessive wear. Some text may be difficult or impossible to read. If you require assistance with the content of this release, please contact us.',body) As newBody, posted_by, Program, Category from [Sheet1$]", con); //here we read data from sheet1
+                        
+                        oleAdpt = new OleDbDataAdapter("select News_ID, DatePublished, Title, Alias, link, MoreInfo, posted, IIF((LEN(body) = 0 AND LEN(link) > 0 AND MID(link,LEN(link) - 3,4) = '.pdf'), 'This archived news release was scanned from a paper copy that may show damage or excessive wear. Some text may be difficult or impossible to read. If you require assistance with the content of this release, please contact us.',body) As newbody, posted_by, Program, Category from [Sheet1$]", con); //here we read data from sheet1
+                        //oleAdpt = new OleDbDataAdapter("select News_ID, DatePublished, Title, Alias, link, MoreInfo, posted,IIF((LEN(body) = 0 AND LEN(link) > 0 AND MID(link,LEN(link) - 3,4) = '.pdf'),'HIREN','PATEL') AS body, posted_by, Program, Category from [Sheet1$]", con); //here we read data from sheet1
                     }
                     else
                     {
@@ -49,8 +51,8 @@ namespace ExcelImport
 
                     oleAdpt.Fill(dtexcel); //fill excel data into dataTable  
                 }
-                catch(Exception ex) {  }
-                
+                catch (Exception ex) { }
+
             }
             return dtexcel;
         }
