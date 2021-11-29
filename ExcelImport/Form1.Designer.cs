@@ -39,11 +39,13 @@ namespace ExcelImport
             this.btnURLReplace = new System.Windows.Forms.Button();
             this.btnJSON = new System.Windows.Forms.Button();
             this.btnDownloadFile = new System.Windows.Forms.Button();
+            this.btnFindDuplicate = new System.Windows.Forms.Button();
+            this.btnJsonPressRelease = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(10, 76);
+            this.button1.Location = new System.Drawing.Point(10, 75);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(106, 23);
             this.button1.TabIndex = 0;
@@ -70,9 +72,9 @@ namespace ExcelImport
             // 
             // progressBar1
             // 
-            this.progressBar1.Location = new System.Drawing.Point(325, 106);
+            this.progressBar1.Location = new System.Drawing.Point(16, 201);
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(405, 23);
+            this.progressBar1.Size = new System.Drawing.Size(672, 23);
             this.progressBar1.TabIndex = 3;
             this.progressBar1.Visible = false;
             // 
@@ -81,7 +83,7 @@ namespace ExcelImport
             this.lblStatus.AutoSize = true;
             this.lblStatus.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.lblStatus.ForeColor = System.Drawing.Color.DarkOliveGreen;
-            this.lblStatus.Location = new System.Drawing.Point(10, 108);
+            this.lblStatus.Location = new System.Drawing.Point(10, 175);
             this.lblStatus.Name = "lblStatus";
             this.lblStatus.Size = new System.Drawing.Size(40, 15);
             this.lblStatus.TabIndex = 4;
@@ -90,7 +92,7 @@ namespace ExcelImport
             // 
             // btnGetJson
             // 
-            this.btnGetJson.Location = new System.Drawing.Point(121, 76);
+            this.btnGetJson.Location = new System.Drawing.Point(121, 75);
             this.btnGetJson.Name = "btnGetJson";
             this.btnGetJson.Size = new System.Drawing.Size(96, 23);
             this.btnGetJson.TabIndex = 5;
@@ -100,7 +102,7 @@ namespace ExcelImport
             // 
             // btnNewJson
             // 
-            this.btnNewJson.Location = new System.Drawing.Point(223, 76);
+            this.btnNewJson.Location = new System.Drawing.Point(223, 75);
             this.btnNewJson.Name = "btnNewJson";
             this.btnNewJson.Size = new System.Drawing.Size(96, 23);
             this.btnNewJson.TabIndex = 6;
@@ -110,7 +112,7 @@ namespace ExcelImport
             // 
             // btnURLReplace
             // 
-            this.btnURLReplace.Location = new System.Drawing.Point(325, 76);
+            this.btnURLReplace.Location = new System.Drawing.Point(325, 75);
             this.btnURLReplace.Name = "btnURLReplace";
             this.btnURLReplace.Size = new System.Drawing.Size(96, 23);
             this.btnURLReplace.TabIndex = 7;
@@ -120,7 +122,7 @@ namespace ExcelImport
             // 
             // btnJSON
             // 
-            this.btnJSON.Location = new System.Drawing.Point(427, 76);
+            this.btnJSON.Location = new System.Drawing.Point(427, 75);
             this.btnJSON.Name = "btnJSON";
             this.btnJSON.Size = new System.Drawing.Size(156, 23);
             this.btnJSON.TabIndex = 8;
@@ -130,7 +132,7 @@ namespace ExcelImport
             // 
             // btnDownloadFile
             // 
-            this.btnDownloadFile.Location = new System.Drawing.Point(589, 77);
+            this.btnDownloadFile.Location = new System.Drawing.Point(589, 75);
             this.btnDownloadFile.Name = "btnDownloadFile";
             this.btnDownloadFile.Size = new System.Drawing.Size(156, 23);
             this.btnDownloadFile.TabIndex = 9;
@@ -138,11 +140,33 @@ namespace ExcelImport
             this.btnDownloadFile.UseVisualStyleBackColor = true;
             this.btnDownloadFile.Click += new System.EventHandler(this.btnDownloadFile_Click);
             // 
+            // btnFindDuplicate
+            // 
+            this.btnFindDuplicate.Location = new System.Drawing.Point(751, 75);
+            this.btnFindDuplicate.Name = "btnFindDuplicate";
+            this.btnFindDuplicate.Size = new System.Drawing.Size(173, 23);
+            this.btnFindDuplicate.TabIndex = 10;
+            this.btnFindDuplicate.Text = "Find Duplicate file from FWS";
+            this.btnFindDuplicate.UseVisualStyleBackColor = true;
+            this.btnFindDuplicate.Click += new System.EventHandler(this.btnFindDuplicate_Click);
+            // 
+            // btnJsonPressRelease
+            // 
+            this.btnJsonPressRelease.Location = new System.Drawing.Point(10, 116);
+            this.btnJsonPressRelease.Name = "btnJsonPressRelease";
+            this.btnJsonPressRelease.Size = new System.Drawing.Size(172, 23);
+            this.btnJsonPressRelease.TabIndex = 11;
+            this.btnJsonPressRelease.Text = "Generate JSON - PressRelease";
+            this.btnJsonPressRelease.UseVisualStyleBackColor = true;
+            this.btnJsonPressRelease.Click += new System.EventHandler(this.btnJsonPressRelease_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(965, 132);
+            this.ClientSize = new System.Drawing.Size(965, 243);
+            this.Controls.Add(this.btnJsonPressRelease);
+            this.Controls.Add(this.btnFindDuplicate);
             this.Controls.Add(this.btnDownloadFile);
             this.Controls.Add(this.btnJSON);
             this.Controls.Add(this.btnURLReplace);
@@ -173,6 +197,8 @@ namespace ExcelImport
         private System.Windows.Forms.Button btnURLReplace;
         private System.Windows.Forms.Button btnJSON;
         private System.Windows.Forms.Button btnDownloadFile;
+        private System.Windows.Forms.Button btnFindDuplicate;
+        private System.Windows.Forms.Button btnJsonPressRelease;
     }
 }
 

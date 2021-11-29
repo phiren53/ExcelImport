@@ -19,7 +19,7 @@ namespace ExcelImport
         public Form1()
         {
             InitializeComponent();
-            txtPath.Text = @"C:\Excel\Sample.xlsx";
+            txtPath.Text = @"C:\Excel\News_29072021.xlsx";
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -1004,6 +1004,137 @@ namespace ExcelImport
                 }
                 progressBar1.Visible = false;
                 MessageBox.Show("Downloading completed.");
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        private void btnFindDuplicate_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                UtilityMethod utilityMethod = new UtilityMethod();
+                DataTable dtExcelData = utilityMethod.ReadExcel(txtPath.Text, "xlsx", false);//Take Count Report File to process
+                DataRow[] dataRows = dtExcelData.Select("DocType = 'Document'");
+                StringBuilder sb = new StringBuilder();
+                progressBar1.Visible = true;
+                progressBar1.Maximum = dataRows.Length;
+                progressBar1.Step = 1;
+                DataTable dtFilesDet = new DataTable();
+                dtFilesDet.Columns.Add("FileName", typeof(string));
+                dtFilesDet.Columns.Add("FileURLPath", typeof(string));
+                foreach (DataRow item in dataRows)
+                {
+                    progressBar1.PerformStep();
+                    // A web URL with a file response
+                    string myWebUrlFile = item["URL"].ToString().ToLower();
+
+                    if (myWebUrlFile.Contains("fws.gov"))
+                    {
+                        //string[] pathname = myWebUrlFile.Split("/");
+                        string filename = utilityMethod.GetURLFilename(myWebUrlFile);// pathname[pathname.Length - 1].ToString();
+
+                        string myLocalFilePath = "C:/Excel/DownloadFiles/" + filename;// Local path where the file will be saved
+
+                        if (string.IsNullOrEmpty(filename))
+                        { 
+                        }
+                        if (!filename.Contains(".pdf")) continue;
+
+                        try
+                        {
+                            DataRow drfile = dtFilesDet.NewRow();
+                            drfile["FileName"] = filename.ToString().ToLower();
+                            drfile["FileURLPath"] = myWebUrlFile.ToString().ToLower();
+                            dtFilesDet.Rows.Add(drfile);
+
+                            //using (var client = new WebClient())
+                            //{
+                            //    client.DownloadFile(myWebUrlFile, myLocalFilePath);
+                            //}
+                        }
+                        catch (WebException we)
+                        {
+                            //sb.AppendLine(myWebUrlFile);
+
+                        }
+                    }
+
+                }
+
+                var duplicates = dtFilesDet.AsEnumerable().GroupBy(r => r[0]).Where(gr => gr.Count() > 1).ToList();
+                DataTable dtDupFilesDet = dtFilesDet.Clone();
+                dtDupFilesDet.Columns.Add("Size",typeof(long));
+                dtDupFilesDet.Columns.Add("Duplicate", typeof(string));
+                foreach (var dupfile in duplicates)
+                {
+                    var drdupfiles = dupfile.ToList();
+                    foreach (var subdupfile in drdupfiles)
+                    {
+
+                        try
+                        {
+                            DataRow drfile = dtDupFilesDet.NewRow();
+                            drfile["FileName"] = subdupfile["FileName"].ToString();
+                            drfile["FileURLPath"] = subdupfile["FileURLPath"].ToString();
+                            
+                            string myLocalFilePath = "C:/Excel/DownloadFiles/" + subdupfile["FileName"].ToString();
+                            using (var client = new WebClient())
+                            {
+                                client.DownloadFile(subdupfile["FileURLPath"].ToString(), myLocalFilePath);
+                            }
+                            FileInfo fi = new FileInfo(myLocalFilePath);
+                            drfile["Size"] = fi.Length;
+                            dtDupFilesDet.Rows.Add(drfile);
+                        }
+                        catch (WebException we)
+                        {
+                            //sb.AppendLine(myWebUrlFile);
+
+                        }
+                        
+                    }
+                    
+                }
+
+                foreach (DataRow drdupfile in dtDupFilesDet.Rows)
+                {
+                    DataRow[] drArr = dtDupFilesDet.Select("FileName = '" + drdupfile["FileName"].ToString() + "' and Size = " + drdupfile["Size"]);
+                    if (drArr.Length > 1)
+                    {
+                        foreach (var item in drArr)
+                        {
+                            item["Duplicate"] = "Duplicate";
+                        }
+                    }
+                }
+                
+
+                progressBar1.Visible = false;
+                GenerateExcel(dtDupFilesDet, @"C:\Excel\FWSDuplicateFiles.xlsx");
+                MessageBox.Show("Downloading completed.");
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        private void btnJsonPressRelease_Click(object sender, EventArgs e)
+        {
+            try
+            {
+
+                UtilityMethod utilityMethod = new UtilityMethod();
+                DataTable dtExcelData = utilityMethod.ReadExcel(txtPath.Text, "xlsx", false);
+                dtExcelData = dtExcelData.Select("Category <> 'Press Release'").CopyToDataTable();
+                string exceljson = utilityMethod.DataTableToJSONWithJSONNet(dtExcelData);
+                string path = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                System.IO.File.WriteAllText(path + "\\WithoutPressReleasedata.json", exceljson);
+
+
             }
             catch (Exception ex)
             {

@@ -40,12 +40,13 @@ namespace ExcelImport
                     if (IswithQuery)
                     {
                         
-                        oleAdpt = new OleDbDataAdapter("select News_ID, DatePublished, Title, Alias, link, MoreInfo, posted, IIF((LEN(body) = 0 AND LEN(link) > 0 AND MID(link,LEN(link) - 3,4) = '.pdf'), 'This archived news release was scanned from a paper copy that may show damage or excessive wear. Some text may be difficult or impossible to read. If you require assistance with the content of this release, please contact us.',body) As newbody, posted_by, Program, Category from [Sheet1$]", con); //here we read data from sheet1
+                        oleAdpt = new OleDbDataAdapter("select News_ID, DatePublished, Title, Alias, link, MoreInfo, posted, IIF((LEN(body) = 0 AND LEN(link) > 0 AND MID(link,LEN(link) - 3,4) = '.pdf'), 'This archived news release was scanned from a paper copy that may show damage or excessive wear. Some text may be difficult or impossible to read. If you require assistance with the content of this release, please contact us.',body) As newbody, posted_by, Program, Category from [Sheet1$] ", con); //here we read data from sheet1
                         //oleAdpt = new OleDbDataAdapter("select News_ID, DatePublished, Title, Alias, link, MoreInfo, posted,IIF((LEN(body) = 0 AND LEN(link) > 0 AND MID(link,LEN(link) - 3,4) = '.pdf'),'HIREN','PATEL') AS body, posted_by, Program, Category from [Sheet1$]", con); //here we read data from sheet1
                     }
                     else
                     {
-                        oleAdpt = new OleDbDataAdapter("select * from [Sheet1$]", con);
+                        //News_ID, DatePublished, Title, Alias, link, MoreInfo, posted,body,posted_by, Program, Category
+                        oleAdpt = new OleDbDataAdapter("select News_ID,DatePublished,Title,Alias,link,MoreInfo,posted,body,posted_by, Program, Category,MID(body, 1, 120) As Teaser from [Sheet1$]", con);
                     }
                     //IIF(body is not null,body, IIF(MID(link,LEN(link) - 3,4) = '.pdf','IM PDF','NO')) As temp,
 
