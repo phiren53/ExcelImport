@@ -520,7 +520,7 @@ namespace ExcelImport
             int? _intNull = null;
             try
             {
-                DataTable dtExcelData, dtParentChildData = new DataTable();
+                DataTable dtParentChildData = new DataTable();
 
                 dtParentChildData.Columns.Add("URL_Data", typeof(string));
                 dtParentChildData.Columns.Add("ID", typeof(int));
@@ -924,7 +924,7 @@ namespace ExcelImport
                 //GenerateExcel(dtUrlData, path + "\\NewBodyWithReplacedURL.xlsx");
                 dtUrlData.Columns["newbody"].ColumnName = "body";
                 string output1 = utilityMethod.DataTableToJSONWithJSONNet(dtUrlData);
-                
+
                 System.IO.File.WriteAllText(@"C:\Users\Pragma Infotech\Desktop\Hiren\ExcelImport\ExcelImport\bin\Debug\AppData\" + "newreplacedurlwithdefaultText.json", output1);
                 #endregion
 
@@ -977,7 +977,7 @@ namespace ExcelImport
                     {
                         //string[] pathname = myWebUrlFile.Split("/");
                         string filename = utilityMethod.GetURLFilename(myWebUrlFile);// pathname[pathname.Length - 1].ToString();
-                                                                                     
+
                         string myLocalFilePath = "C:/Excel/DownloadFiles/" + filename;// Local path where the file will be saved
 
                         if (!filename.Contains(".pdf")) continue;
@@ -992,7 +992,7 @@ namespace ExcelImport
                         catch (WebException we)
                         {
                             sb.AppendLine(myWebUrlFile);
-                            
+
                         }
                     }
 
@@ -1039,7 +1039,7 @@ namespace ExcelImport
                         string myLocalFilePath = "C:/Excel/DownloadFiles/" + filename;// Local path where the file will be saved
 
                         if (string.IsNullOrEmpty(filename))
-                        { 
+                        {
                         }
                         if (!filename.Contains(".pdf")) continue;
 
@@ -1066,7 +1066,7 @@ namespace ExcelImport
 
                 var duplicates = dtFilesDet.AsEnumerable().GroupBy(r => r[0]).Where(gr => gr.Count() > 1).ToList();
                 DataTable dtDupFilesDet = dtFilesDet.Clone();
-                dtDupFilesDet.Columns.Add("Size",typeof(long));
+                dtDupFilesDet.Columns.Add("Size", typeof(long));
                 dtDupFilesDet.Columns.Add("Duplicate", typeof(string));
                 foreach (var dupfile in duplicates)
                 {
@@ -1079,7 +1079,7 @@ namespace ExcelImport
                             DataRow drfile = dtDupFilesDet.NewRow();
                             drfile["FileName"] = subdupfile["FileName"].ToString();
                             drfile["FileURLPath"] = subdupfile["FileURLPath"].ToString();
-                            
+
                             string myLocalFilePath = "C:/Excel/DownloadFiles/" + subdupfile["FileName"].ToString();
                             using (var client = new WebClient())
                             {
@@ -1094,9 +1094,9 @@ namespace ExcelImport
                             //sb.AppendLine(myWebUrlFile);
 
                         }
-                        
+
                     }
-                    
+
                 }
 
                 foreach (DataRow drdupfile in dtDupFilesDet.Rows)
@@ -1110,7 +1110,7 @@ namespace ExcelImport
                         }
                     }
                 }
-                
+
 
                 progressBar1.Visible = false;
                 GenerateExcel(dtDupFilesDet, @"C:\Excel\FWSDuplicateFiles.xlsx");
@@ -1130,6 +1130,30 @@ namespace ExcelImport
                 UtilityMethod utilityMethod = new UtilityMethod();
                 DataTable dtExcelData = utilityMethod.ReadExcel(txtPath.Text, "xlsx", false);
                 dtExcelData = dtExcelData.Select("Category <> 'Press Release'").CopyToDataTable();
+                foreach (DataRow item in dtExcelData.Rows)
+                {
+                    var plainText = HtmlUtilities.ConvertToPlainText(item["body"].ToString());
+                    if (!string.IsNullOrEmpty(plainText))
+                    {
+                        try
+                        {
+                            if (plainText.Trim().Length > 120)
+                            {
+                                item["Teaser"] = plainText.Trim().Substring(0, 120) + (plainText.Length > 0 ? "..." : "");
+                            }
+                            else
+                            {
+                                item["Teaser"] = plainText.Trim();
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            throw;
+                        }
+                        
+                    }
+
+                }
                 string exceljson = utilityMethod.DataTableToJSONWithJSONNet(dtExcelData);
                 string path = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
                 System.IO.File.WriteAllText(path + "\\WithoutPressReleasedata.json", exceljson);
