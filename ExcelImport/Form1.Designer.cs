@@ -85,10 +85,9 @@ namespace ExcelImport
             this.lblStatus.ForeColor = System.Drawing.Color.DarkOliveGreen;
             this.lblStatus.Location = new System.Drawing.Point(10, 175);
             this.lblStatus.Name = "lblStatus";
-            this.lblStatus.Size = new System.Drawing.Size(40, 15);
+            this.lblStatus.Size = new System.Drawing.Size(42, 15);
             this.lblStatus.TabIndex = 4;
-            this.lblStatus.Text = "label2";
-            this.lblStatus.Visible = false;
+            this.lblStatus.Text = "Status";
             // 
             // btnGetJson
             // 

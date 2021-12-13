@@ -46,7 +46,7 @@ namespace ExcelImport
                     else
                     {
                         //News_ID, DatePublished, Title, Alias, link, MoreInfo, posted,body,posted_by, Program, Category
-                        oleAdpt = new OleDbDataAdapter("select News_ID,DatePublished,Title,Alias,link,MoreInfo,posted,body,posted_by, Program, Category,'' As Teaser from [Sheet1$]", con);
+                        oleAdpt = new OleDbDataAdapter("select News_ID,DatePublished,Title,Alias,link,MoreInfo,posted,body,posted_by, Program, Category,MID(body, 1, 120) As Teaser,Region from [Sheet1$]", con);
                     }
                     //IIF(body is not null,body, IIF(MID(link,LEN(link) - 3,4) = '.pdf','IM PDF','NO')) As temp,
 

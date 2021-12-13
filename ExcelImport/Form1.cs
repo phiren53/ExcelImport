@@ -34,7 +34,7 @@ namespace ExcelImport
 
                 ReadExcelWithURLExtraction(out dtOuptpuExcel, out urls, out urllistwithBody);
 
-                GenerateCountReport(urls);
+                //GenerateCountReport(urls);
 
                 lblStatus.Text = "Main Report reletad data generation is in progress...";
                 //string jsonoutput = DataTableToJSONWithJSONNet(dtOuptpuExcel);
@@ -356,7 +356,16 @@ namespace ExcelImport
                     {
                         for (int k = 0; k < table.Columns.Count; k++)
                         {
-                            excelWorkSheet.Cells[j + 2, k + 1] = table.Rows[j].ItemArray[k].ToString();
+                            try
+                            {
+                                excelWorkSheet.Cells[j + 2, k + 1] = table.Rows[j].ItemArray[k].ToString();
+                            }
+                            catch (Exception ex)
+                            {
+
+                                throw ex;
+                            }
+                            
                         }
                     }
                 }
@@ -398,10 +407,15 @@ namespace ExcelImport
                 int idSequence = 0;
 
                 #region to generate json with Body
-                //var outp = JsonConvert.SerializeObject(urllistwithBody);
+                var outp = JsonConvert.SerializeObject(urllistwithBody);
 
                 // Write that JSON to txt file,  
-                //System.IO.File.WriteAllText(@"C:\Users\Pragma Infotech\Desktop\Hiren\ExcelImport\ExcelImport\bin\Debug\AppData\" + "output.json", outp);
+                System.IO.File.WriteAllText(@"C:\Users\Pragma Infotech\Desktop\Hiren\ExcelImport\ExcelImport\bin\Debug\AppData\" + "urllistwithBody.json", outp);
+
+                outp = JsonConvert.SerializeObject(urls);
+
+                // Write that JSON to txt file,  
+                System.IO.File.WriteAllText(@"C:\Users\Pragma Infotech\Desktop\Hiren\ExcelImport\ExcelImport\bin\Debug\AppData\" + "urls.json", outp);
                 #endregion
 
                 var urlsGroups = urls.GroupBy(i => i)
@@ -864,13 +878,14 @@ namespace ExcelImport
             {
                 UtilityMethod utilityMethod = new UtilityMethod();
                 string path = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                DataTable dtMappingData = utilityMethod.ReadExcel(path + "\\News Test Mappings.xlsx", "xlsx", false);
+                DataTable dtMappingData = utilityMethod.ReadExcel("C:\\Excel\\Excel - Process 2 09-12-2021\\URL Mapping 1.0.xlsx", "xlsx", false);
 
                 #region Find and Replace in JSON
                 var urlsjson = System.IO.File.ReadAllText(@"C:\Users\Pragma Infotech\Desktop\Hiren\ExcelImport\ExcelImport\bin\Debug\AppData\" + "urldetailList.json");
 
                 List<URLDetail> urlList = JsonConvert.DeserializeObject<List<URLDetail>>(urlsjson);
-                DataTable dtUrlData = utilityMethod.ReadExcel(path + "\\News_29072021.xlsx", "xlsx", true);
+                //DataTable dtUrlData = utilityMethod.ReadExcel(path + "\\News_29072021.xlsx", "xlsx", true);
+                DataTable dtUrlData = utilityMethod.ReadExcel("C:\\Excel\\Excel - Process 2 09-12-2021\\News Export 12-07-2021 For Replace URL1.xlsx", "xlsx", true);
                 //dtUrlData.Columns.Add("New Body", typeof(string));
 
                 foreach (DataRow mappingItem in dtMappingData.Rows)
@@ -1129,7 +1144,7 @@ namespace ExcelImport
 
                 UtilityMethod utilityMethod = new UtilityMethod();
                 DataTable dtExcelData = utilityMethod.ReadExcel(txtPath.Text, "xlsx", false);
-                dtExcelData = dtExcelData.Select("Category <> 'Press Release'").CopyToDataTable();
+                dtExcelData = dtExcelData.Select("Category = 'Press Release'").CopyToDataTable();
                 foreach (DataRow item in dtExcelData.Rows)
                 {
                     var plainText = HtmlUtilities.ConvertToPlainText(item["body"].ToString());
@@ -1156,12 +1171,36 @@ namespace ExcelImport
                 }
                 string exceljson = utilityMethod.DataTableToJSONWithJSONNet(dtExcelData);
                 string path = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                System.IO.File.WriteAllText(path + "\\WithoutPressReleasedata.json", exceljson);
+                System.IO.File.WriteAllText(path + "\\PressReleasedata.json", exceljson);
 
 
             }
             catch (Exception ex)
             {
+                throw ex;
+            }
+        }
+
+        private void btnAddRegion_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                #region Find and Replace in JSON
+                var urlsjson = System.IO.File.ReadAllText(@"C:\Users\Pragma Infotech\Desktop\Hiren\ExcelImport\ExcelImport\bin\Debug\AppData\" + "urldetailList.json");
+
+                List<URLDetail> urlList = JsonConvert.DeserializeObject<List<URLDetail>>(urlsjson);
+                UtilityMethod utilityMethod = new UtilityMethod();
+                DataTable dtRegionSourceData = utilityMethod.ReadExcel("C:\\Excel\\Excel - Process 2 09-12-2021\\News Regions Export 12-07-2021.xls", "xls", false);
+                foreach (var urlitem in urlList)
+                {
+                    DataRow[] drArr = dtRegionSourceData.Select("News_ID = '"+ urlitem.Body[0] +"'");
+                    urlitem.Body.Append("1");
+                }
+                #endregion
+            }
+            catch (Exception ex)
+            {
+
                 throw ex;
             }
         }
