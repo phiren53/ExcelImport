@@ -976,7 +976,7 @@ namespace ExcelImport
             try
             {
                 UtilityMethod utilityMethod = new UtilityMethod();
-                DataTable dtExcelData = utilityMethod.ReadExcel(txtPath.Text, "xlsx", false);//Take Count Report File to process
+                DataTable dtExcelData = utilityMethod.ReadExcel(txtPath.Text, "xlsx", false);//Take Count Report File to process - C:\Excel\CountReport.xlsx
                 DataRow[] dataRows = dtExcelData.Select("DocType = 'Document'");
                 StringBuilder sb = new StringBuilder();
                 progressBar1.Visible = true;
@@ -993,7 +993,29 @@ namespace ExcelImport
                         //string[] pathname = myWebUrlFile.Split("/");
                         string filename = utilityMethod.GetURLFilename(myWebUrlFile);// pathname[pathname.Length - 1].ToString();
 
-                        string myLocalFilePath = "C:/Excel/DownloadFiles/" + filename;// Local path where the file will be saved
+                        string myLocalFilePath = "D:/Excel Download/FWS/" + filename;// Local path where the file will be saved
+
+                        if (!filename.Contains(".pdf")) continue;
+
+                        try
+                        {
+                            using (var client = new WebClient())
+                            {
+                                client.DownloadFile(myWebUrlFile, myLocalFilePath);
+                            }
+                        }
+                        catch (WebException we)
+                        {
+                            sb.AppendLine(myWebUrlFile);
+
+                        }
+                    }
+                    else 
+                    {
+                        // string[] pathname = myWebUrlFile.Split("/");
+                        string filename = utilityMethod.GetURLFilename(myWebUrlFile);// pathname[pathname.Length - 1].ToString();
+
+                        string myLocalFilePath = "D:/Excel Download/OtherDomain/" + filename;// Local path where the file will be saved
 
                         if (!filename.Contains(".pdf")) continue;
 
@@ -1013,11 +1035,12 @@ namespace ExcelImport
 
                 }
 
-                using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:/Excel/DownloadFiles/ErrorPaths.txt"))
+                using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"D:/Excel Download/ErrorPaths.txt"))
                 {
                     file.WriteLine(sb.ToString()); // "sb" is the StringBuilder
                 }
                 progressBar1.Visible = false;
+                lblStatus.Text = "Downloading completed.";
                 MessageBox.Show("Downloading completed.");
             }
             catch (Exception ex)
