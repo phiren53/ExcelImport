@@ -49,7 +49,7 @@ namespace ExcelImport
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(274, 23);
             this.button1.TabIndex = 0;
-            this.button1.Text = "Generate Report";
+            this.button1.Text = "1. Generate Report";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
@@ -95,7 +95,7 @@ namespace ExcelImport
             this.btnGetJson.Name = "btnGetJson";
             this.btnGetJson.Size = new System.Drawing.Size(274, 23);
             this.btnGetJson.TabIndex = 5;
-            this.btnGetJson.Text = "Generate JSON";
+            this.btnGetJson.Text = "2. Generate URLDetail List JSON";
             this.btnGetJson.UseVisualStyleBackColor = true;
             this.btnGetJson.Click += new System.EventHandler(this.btnGetJson_Click);
             // 
@@ -105,7 +105,7 @@ namespace ExcelImport
             this.btnNewJson.Name = "btnNewJson";
             this.btnNewJson.Size = new System.Drawing.Size(274, 23);
             this.btnNewJson.TabIndex = 6;
-            this.btnNewJson.Text = "New JSON";
+            this.btnNewJson.Text = "3. Parent Child URL List JSON";
             this.btnNewJson.UseVisualStyleBackColor = true;
             this.btnNewJson.Click += new System.EventHandler(this.btnNewJson_Click);
             // 
@@ -115,7 +115,7 @@ namespace ExcelImport
             this.btnURLReplace.Name = "btnURLReplace";
             this.btnURLReplace.Size = new System.Drawing.Size(274, 23);
             this.btnURLReplace.TabIndex = 7;
-            this.btnURLReplace.Text = "Find - Replace";
+            this.btnURLReplace.Text = "4. Find - Replace";
             this.btnURLReplace.UseVisualStyleBackColor = true;
             this.btnURLReplace.Click += new System.EventHandler(this.btnURLReplace_Click);
             // 
@@ -135,7 +135,7 @@ namespace ExcelImport
             this.btnDownloadFile.Name = "btnDownloadFile";
             this.btnDownloadFile.Size = new System.Drawing.Size(274, 23);
             this.btnDownloadFile.TabIndex = 9;
-            this.btnDownloadFile.Text = "Download FWS Pdf File";
+            this.btnDownloadFile.Text = "5. Download FWS Pdf File";
             this.btnDownloadFile.UseVisualStyleBackColor = true;
             this.btnDownloadFile.Click += new System.EventHandler(this.btnDownloadFile_Click);
             // 
@@ -155,7 +155,7 @@ namespace ExcelImport
             this.btnJsonPressRelease.Name = "btnJsonPressRelease";
             this.btnJsonPressRelease.Size = new System.Drawing.Size(351, 23);
             this.btnJsonPressRelease.TabIndex = 11;
-            this.btnJsonPressRelease.Text = "Generate JSON - PressRelease";
+            this.btnJsonPressRelease.Text = "6. Generate JSON - WithAndWithout PressRelease";
             this.btnJsonPressRelease.UseVisualStyleBackColor = true;
             this.btnJsonPressRelease.Click += new System.EventHandler(this.btnJsonPressRelease_Click);
             // 
