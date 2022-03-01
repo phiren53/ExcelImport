@@ -35,6 +35,8 @@ Output File : C:\Users\Pragma Infotech\Desktop\Hiren\ExcelImport\ExcelImport\bin
 6. Generate JSON - WithAndWithout PressRelease
 To generate JSON With and Without PressRelease category along with Teaser and Region (Lookup in the excel)
 For Region Excel : News Regions Export 12-07-2021.xls
+- Add ""Teaser" Column in excel
+- In excel sheet name should be "Sheet1"
 
 Input File : C:\Excel\Excel - Process 2 09-12-2021\News Export 12-07-2021 For Replace URL1.xlsx
 Output File : C:\\Users\\Pragma Infotech\\Desktop\\Hiren\\ExcelImport\\ExcelImport\\bin\\Debug\\AppData\\PressReleasedata.json

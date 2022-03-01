@@ -53,7 +53,7 @@ namespace ExcelImport
 
                     oleAdpt.Fill(dtexcel); //fill excel data into dataTable  
                 }
-                catch (Exception ex) { }
+                catch (Exception ex) { throw ex; }
 
             }
             return dtexcel;

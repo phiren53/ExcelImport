@@ -16,10 +16,11 @@ namespace ExcelImport
 {
     public partial class Form1 : Form
     {
+        string mainPath = @"C:\Excel\";
         public Form1()
         {
             InitializeComponent();
-            txtPath.Text = @"C:\Excel\News_29072021.xlsx";
+            txtPath.Text = @"C:\Excel\Excel3.0\News Export 2-23-2022 DELTA - 2.xls";
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -40,11 +41,12 @@ namespace ExcelImport
                 //string jsonoutput = DataTableToJSONWithJSONNet(dtOuptpuExcel);
                 //WriteDataTableToExcel(dtOuptpuExcel, "Report", @"C:\Users\Pragma Infotech\Desktop\Hiren\Report.xlsx");
                 lblStatus.Text = "Generating main report excel...";
-                GenerateExcel(dtOuptpuExcel, @"C:\Excel\Report.xlsx");
+                string path = @"C:\Excel\Report.xlsx";
+                GenerateExcel(dtOuptpuExcel, path);
 
                 lblStatus.Visible = false;
 
-                MessageBox.Show("Report generated successfully.");
+                MessageBox.Show("Report generated successfully. (Path : " + path + ")");
 
                 progressBar1.Visible = false;
 
@@ -52,7 +54,7 @@ namespace ExcelImport
             catch (Exception ex)
             {
 
-                throw ex;
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -410,13 +412,15 @@ namespace ExcelImport
                 var outp = JsonConvert.SerializeObject(urllistwithBody);
 
                 // Write that JSON to txt file,  
-                System.IO.File.WriteAllText(@"C:\Users\Pragma Infotech\Desktop\Hiren\ExcelImport\ExcelImport\bin\Debug\AppData\" + "urllistwithBody.json", outp);
+                System.IO.File.WriteAllText(mainPath + "urllistwithBody.json", outp);
 
                 outp = JsonConvert.SerializeObject(urls);
 
                 // Write that JSON to txt file,  
-                System.IO.File.WriteAllText(@"C:\Users\Pragma Infotech\Desktop\Hiren\ExcelImport\ExcelImport\bin\Debug\AppData\" + "urls.json", outp);
+                System.IO.File.WriteAllText(mainPath + "urls.json", outp);
                 #endregion
+
+                lblStatus.Text = "Urls & UrllistwithBody json file generated. (Path : + " + mainPath + ")";
 
                 #region Already Covered on New Json button click
                 /* 
@@ -565,8 +569,8 @@ namespace ExcelImport
 
                 // Write that JSON to txt file,  
                 //System.IO.File.WriteAllText(@"C:\Users\Pragma Infotech\Desktop\Hiren\ExcelImport\ExcelImport\bin\Debug\AppData\" + "urls.json", outp);
-                var urlsjson = System.IO.File.ReadAllText(@"C:\Users\Pragma Infotech\Desktop\Hiren\ExcelImport\ExcelImport\bin\Debug\AppData\" + "urls.json"); // Generated from Generate JSON button
-                var urllistwithBodyjon = System.IO.File.ReadAllText(@"C:\Users\Pragma Infotech\Desktop\Hiren\ExcelImport\ExcelImport\bin\Debug\AppData\" + "urllistwithBody.json");
+                var urlsjson = System.IO.File.ReadAllText(mainPath + "urls.json"); // Generated from Generate JSON button
+                var urllistwithBodyjon = System.IO.File.ReadAllText(mainPath + "urllistwithBody.json");
 
                 urls = JsonConvert.DeserializeObject<List<string>>(urlsjson);
                 urllistwithBody = JsonConvert.DeserializeObject<List<KeyValuePair<string, string[]>>>(urllistwithBodyjon);
@@ -692,9 +696,9 @@ namespace ExcelImport
                 }
                 lblStatus.Text = "Generating Json...";
                 string output = JsonConvert.SerializeObject(urldetailList);
-                System.IO.File.WriteAllText(@"C:\Users\Pragma Infotech\Desktop\Hiren\ExcelImport\ExcelImport\bin\Debug\AppData\" + "urldetailList.json", output);
+                System.IO.File.WriteAllText(mainPath + "urldetailList.json", output);
                 //string jsonTreeViewData = DataTableToJSONWithJSONNet(dtParentChildData);
-                lblStatus.Text = "JSON Generated...";
+                lblStatus.Text = "JSON Generated...(Path : " + mainPath + ")";
             }
             catch (Exception ex)
             {
@@ -890,11 +894,11 @@ namespace ExcelImport
                 DataTable dtMappingData = utilityMethod.ReadExcel("C:\\Excel\\Excel - Process 2 09-12-2021\\URL Mapping 1.0.xlsx", "xlsx", false);
 
                 #region Find and Replace in JSON
-                var urlsjson = System.IO.File.ReadAllText(@"C:\Users\Pragma Infotech\Desktop\Hiren\ExcelImport\ExcelImport\bin\Debug\AppData\" + "urldetailList.json");
+                var urlsjson = System.IO.File.ReadAllText(mainPath + "urldetailList.json");
 
                 List<URLDetail> urlList = JsonConvert.DeserializeObject<List<URLDetail>>(urlsjson);
                 //DataTable dtUrlData = utilityMethod.ReadExcel(path + "\\News_29072021.xlsx", "xlsx", true);
-                DataTable dtUrlData = utilityMethod.ReadExcel("C:\\Excel\\Excel - Process 2 09-12-2021\\News Export 12-07-2021 For Replace URL1.xlsx", "xlsx", true);
+                DataTable dtUrlData = utilityMethod.ReadExcel(@"C:\Excel\Excel3.0\News Export 2-23-2022 DELTA For Replace.xlsx", "xlsx", true);
                 //dtUrlData.Columns.Add("New Body", typeof(string));
                 progressBar1.Visible = true;
                 progressBar1.Maximum = dtMappingData.Rows.Count;
@@ -948,20 +952,20 @@ namespace ExcelImport
 
                 }
                 string output = JsonConvert.SerializeObject(urlList);
-                System.IO.File.WriteAllText(@"C:\Users\Pragma Infotech\Desktop\Hiren\ExcelImport\ExcelImport\bin\Debug\AppData\" + "newreplacedurl.json", output);
+                System.IO.File.WriteAllText(mainPath + "newreplacedurl.json", output);
                 //GenerateExcel(dtUrlData, path + "\\NewBodyWithReplacedURL.xlsx");
                 dtUrlData.Columns["newbody"].ColumnName = "body";
                 string output1 = utilityMethod.DataTableToJSONWithJSONNet(dtUrlData);
 
-                System.IO.File.WriteAllText(@"C:\Users\Pragma Infotech\Desktop\Hiren\ExcelImport\ExcelImport\bin\Debug\AppData\" + "newreplacedurlwithdefaultText.json", output1);
+                System.IO.File.WriteAllText(mainPath + "newreplacedurlwithdefaultText.json", output1);
                 #endregion
 
-                MessageBox.Show("Process completed.");
+                MessageBox.Show("Process completed.( Path " + mainPath + ")");
 
             }
             catch (Exception ex)
             {
-                throw ex;
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -1187,21 +1191,23 @@ namespace ExcelImport
                 progressBar1.PerformStep();
                 string exceljson = utilityMethod.DataTableToJSONWithJSONNet(dtExcelData);
                 string path = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                System.IO.File.WriteAllText("C:\\Users\\Pragma Infotech\\Desktop\\Hiren\\ExcelImport\\ExcelImport\\bin\\Debug\\AppData\\PressReleasedata.json", exceljson);
+                System.IO.File.WriteAllText(mainPath + "PressReleasedata.json", exceljson);
                 progressBar1.PerformStep();
 
                 dtExcelData = WithAndWithoutPressReleaseWithTeaser(false);
                 progressBar1.PerformStep();
                 exceljson = utilityMethod.DataTableToJSONWithJSONNet(dtExcelData);
                 path = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                System.IO.File.WriteAllText("C:\\Users\\Pragma Infotech\\Desktop\\Hiren\\ExcelImport\\ExcelImport\\bin\\Debug\\AppData\\WithoutPressReleasedata.json", exceljson);
+                System.IO.File.WriteAllText(mainPath + "WithoutPressReleasedata.json", exceljson);
                 progressBar1.PerformStep();
+                lblStatus.Text = "PressReleasedata & WithoutPressReleasedata Json Generated. (Path : " + mainPath + ")";
 
 
             }
             catch (Exception ex)
             {
-                throw ex;
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
             }
         }
 
